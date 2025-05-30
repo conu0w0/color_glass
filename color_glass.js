@@ -475,6 +475,9 @@ function click_face(){
 }
 
 function draw_game(){
+    // 每次畫畫面時重新設定 face 位置
+    face.x = view.w - 80;
+    face.y = view.h - 80;
 	var i,j;
 	cls();
 	
@@ -560,7 +563,7 @@ function draw_cel(cx,cy){
 
     // 加毛玻璃效果
     ctx.save();
-    ctx.filter = 'blur(5px) brightness(1.1)';
+    ctx.filter = 'blur(3px) brightness(1.1)';
     triangle(x,y,x+w,y-h,x+w,y+h,cols[cel[cy][cx].col[0]],a);
     triangle(x,y,x+w,y+h,x-w,y+h,cols[cel[cy][cx].col[1]],a);
     triangle(x,y,x-w,y+h,x-w,y-h,cols[cel[cy][cx].col[2]],a);
