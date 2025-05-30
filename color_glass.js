@@ -683,3 +683,24 @@ function draw_game(){
         draw_text(bubble_x + bubble_r, bubble_y + bubble_r + 32, mes.txt2, 20, "#000000");
     }
 }
+
+// 畫出單一格子
+function draw_cel(cx,cy){
+    var w = cel_w/2;
+    var h = cel_h/2;
+    var x = cel[cy][cx].x+w;
+    var y = cel[cy][cx].y+h;
+    var a = 0.9;
+
+    triangle(x,y,x+w,y-h,x+w,y+h,cols[cel[cy][cx].col[0]],a);
+    triangle(x,y,x+w,y+h,x-w,y+h,cols[cel[cy][cx].col[1]],a);
+    triangle(x,y,x-w,y+h,x-w,y-h,cols[cel[cy][cx].col[2]],a);
+    triangle(x,y,x-w,y-h,x+w,y-h,cols[cel[cy][cx].col[3]],a);
+
+    if( linewidth>0 ){
+        ctx.beginPath();
+        ctx.strokeRect(x-w,y-h,cel_w,cel_h);
+        draw_line(x-w,y-h,x+w,y+h,"#000000");
+        draw_line(x-w,y+h,x+w,y-h,"#000000");
+    }
+}
