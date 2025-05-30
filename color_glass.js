@@ -15,7 +15,7 @@ var se_clear = new Audio("sounds/clear.mp3");
 var se_button = new Audio("sounds/button.mp3");
 
 // 要載入的音效列表
-var sound_list = [bgm, se_click, se_swap, se_clear, se_buttom];
+var sound_list = [bgm, se_click, se_swap, se_clear, se_button];
 var sound_loaded = 0;
 var sound_total = sound_list.length;
 var loading_done = false;
