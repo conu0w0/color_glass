@@ -475,6 +475,7 @@ function click_face(){
 }
 
 function draw_game() {
+    var i, j;
     // 棋盤的位置資訊
     var board_x = cel[0][0].ox;
     var board_y = cel[0][0].oy;
