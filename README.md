@@ -11,7 +11,7 @@
 
 ## 使用方式
 
-直接開啟 `index.html` 即可遊玩，或[點我開始玩遊戲！](https://你的帳號.github.io/color-glass/)
+直接開啟 `index.html` 即可遊玩，或[點我開始玩遊戲！](https://conu0w0.github.io/color_glass/)
 。
 
 ## 作者
