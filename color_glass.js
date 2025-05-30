@@ -227,11 +227,10 @@ function draw_text(x, y, str, size, col) {
 var draw_request = false;
 var counter = 0;
 var cols = [
-        "#FF6B6B", "#FFD93D", "#6BCB77", "#4D96FF",
-        "#FF9CEE", "#FFABAB", "#FFDE59", "#71C9CE",
-        "#FFA500", "#9D4EDD", "#F9F871", "#00C2A8",
-        "#FD8A8A", "#A8D1D1", "#8EECF5", "#F6D6D6",
-        "#B28DFF", "#FFB84C", "#7BDFF2", "#FF686B"
+        "#FF6B6B","#FFD93D","#6BCB77","#4D96FF","#FF9CEE",
+        "#FFABAB","#FFDE59","#71C9CE","#FFA500","#9D4EDD",
+        "#F9F871","#00C2A8","#FD8A8A","#A8D1D1","#8EECF5",
+        "#B28DFF","#FFB84C","#7BDFF2","#C1FBA4","#FF686B"
     ];
 var selected = 0;
 var linewidth = 4;
@@ -743,11 +742,10 @@ function draw_cel(cx,cy){
 function update_colors(){
     // 固定顏色 pool
     let color_pool = [
-        "#FF6B6B", "#FFD93D", "#6BCB77", "#4D96FF",
-        "#FF9CEE", "#FFABAB", "#FFDE59", "#71C9CE",
-        "#FFA500", "#9D4EDD", "#F9F871", "#00C2A8",
-        "#FD8A8A", "#A8D1D1", "#8EECF5", "#F6D6D6",
-        "#B28DFF", "#FFB84C", "#7BDFF2", "#FF686B"
+        "#FF6B6B","#FFD93D","#6BCB77","#4D96FF","#FF9CEE",
+        "#FFABAB","#FFDE59","#71C9CE","#FFA500","#9D4EDD",
+        "#F9F871","#00C2A8","#FD8A8A","#A8D1D1","#8EECF5",
+        "#B28DFF","#FFB84C","#7BDFF2","#C1FBA4","#FF686B"
     ];
 
     // 洗牌（Fisher-Yates 洗牌法）
