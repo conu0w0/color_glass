@@ -343,6 +343,20 @@ function start_wait(){
     click_func = first_click;
 }
 
+// 判斷是否按到重設按鈕
+function click_reset(){
+    var mx = mouse.x;
+    var my = mouse.y;
+    var x = resetbutton.x;
+    var y = resetbutton.y;
+    var r = resetbutton.r+4;
+    if( mx<x-r || mx>x+r ) return false;
+    if( my<y-r || my>y+r ) return false;
+    se_button.play();
+    return true;
+}
+
+
 // 玩家第一次點擊
 function first_click(){
     bgm.play();
