@@ -4,32 +4,32 @@
 
 ## 遊戲玩法
 
-- 點擊一個格子，選擇要移動的拼圖塊
-- 再點擊另一個格子，交換位置
-- 目標是讓所有相鄰邊的顏色一致
-- 通關後會顯示用時與評語
-- 左上角有重置按鈕
-- 左側三個按鈕可以切換三種版面
+- 點擊一個格子，選擇要移動的拼圖塊  
+- 再點擊另一個格子，交換位置  
+- 目標是讓所有相鄰邊的顏色一致  
+- 通關後會顯示用時與評語  
+- 左上角有重置按鈕  
+- 左側三個按鈕可以切換三種版面  
 
 ## 使用方式
 
-[點我開始玩遊戲](https://conu0w0.github.io/color_glass/)
+👉 [點我開始玩遊戲](https://conu0w0.github.io/color_glass/)
 
 ## 作者
 
-這個遊戲是 國立臺東大學 綠資一 林奕宏 在 網頁程式設計 課程期末專案製作。
+這個遊戲是 **國立臺東大學 綠資一 林奕宏** 在 **網頁程式設計** 課程期末專案製作。
 
 ## 素材來源
 
-- 圖片
+### 圖片
 
-**網頁小圖示**
-[Icon-Icons](https://icon-icons.com/)
+- **網頁小圖示**  
+  [Icon-Icons](https://icon-icons.com/)
 
-- 音樂/音效
+### 音樂 / 音效
 
-**BGM 背景音樂**  
-[甘茶の音楽工房](https://amachamusic.chagasi.com/index.html)
+- **BGM 背景音樂**  
+  [甘茶の音楽工房](https://amachamusic.chagasi.com/index.html)
 
-**音效 SE**  
-[効果音ラボ](https://soundeffect-lab.info/)
+- **音效 SE**  
+  [効果音ラボ](https://soundeffect-lab.info/)
