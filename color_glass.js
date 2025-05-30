@@ -3,7 +3,7 @@ var context;
 var scalerate = 1;
 var FPS = 30;            // 畫面更新頻率（每秒30次）
 var touchdev = false;    // 是否為觸控裝置
-var view = { w:640, h:480 }; // 畫布大小
+var view = { w: 960, h: 720 }; // 畫布大小
 var mouse = { x:0, y:0, ox:0, oy:0 }; // 滑鼠座標
 var tickcount = 0;       // 計時器
 
@@ -562,11 +562,19 @@ function draw_cel(cx,cy){
     var x = cel[cy][cx].x+w;
     var y = cel[cy][cx].y+h;
     var a = 0.9;
+
+    // 加毛玻璃效果
+    ctx.save();
+    ctx.filter = 'blur(5px) brightness(1.1)';
+
     // 四邊三角形
     triangle(x,y,x+w,y-h,x+w,y+h,cols[cel[cy][cx].col[0]],a);
     triangle(x,y,x+w,y+h,x-w,y+h,cols[cel[cy][cx].col[1]],a);
     triangle(x,y,x-w,y+h,x-w,y-h,cols[cel[cy][cx].col[2]],a);
     triangle(x,y,x-w,y-h,x+w,y-h,cols[cel[cy][cx].col[3]],a);
+
+    ctx.restore();
+
     // 外框
     if( linewidth>0 ){
         ctx.beginPath();
@@ -575,6 +583,7 @@ function draw_cel(cx,cy){
         draw_line(x-w,y+h,x+w,y-h,"#000000");
     }
 }
+
 
 // 畫出氣泡訊息框
 function fukidasi(x, y, w, h, r, col) {
