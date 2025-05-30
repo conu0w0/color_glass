@@ -7,6 +7,21 @@ var view = { w:640, h:480 }; // 畫布大小
 var mouse = { x:0, y:0, ox:0, oy:0 }; // 滑鼠座標
 var tickcount = 0;       // 計時器
 
+// 音效與背景音樂
+var bgm = new Audio("bgm.mp3");
+var se_click = new Audio("click.mp3");
+var se_swap = new Audio("swap.mp3");
+var se_clear = new Audio("clear.mp3");
+
+// 音效初始化
+function init_sound(){
+    bgm.loop = true;
+    bgm.volume = 0.5;
+    se_click.volume = 0.6;
+    se_swap.volume = 0.6;
+    se_clear.volume = 0.7;
+}
+
 // 事件用的函數
 var timer_func = new Function();
 var next_func = new Function();
@@ -77,6 +92,7 @@ window.onload = function(){
     }
     
     init_event_func();
+    init_sound();
     frame_loop();
     init_game();
 }
@@ -86,7 +102,7 @@ function frame_loop() {
     if( timer_func != null ) timer_func();
     if( draw_request ) draw_game();
     draw_request = false;
-    setTimeout( frame_loop, 1000/FPS ); // 設定更新間隔
+    requestAnimationFrame(frame_loop); // 設定更新間隔
 }
 
 function mouseDownListner(e) {
@@ -273,12 +289,16 @@ function start_wait(){
 
 // 玩家第一次點擊
 function first_click(){
+    bgm.play();
     if( click_reset() ){
         start_stage();
         return;
     }
     var n = get_cn();
     if( n<0 ) return;
+
+    se_click.play();
+    
     selected = n;
     for( i=0; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
@@ -365,6 +385,9 @@ function move_cel(){
         draw_request = true;
         return;
     }
+
+    se_swap.play();
+    
     // 動畫完成，正式交換顏色
     for( i=0; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
@@ -411,6 +434,10 @@ function check_clear(){
 
 // 過關動畫
 function clear_anime(){
+    if( counter == 0 ){
+        se_clear.play();
+    }
+    
     linewidth -= 0.5;
     if( linewidth<0 ) face.pat=1;    
     draw_request = true;
@@ -540,15 +567,15 @@ function draw_game(){
 
     // 畫出訊息氣泡
     if( mes.exist ){    
-        var w = 160;
-        var h = 100;
+        var w = 130;
+        var h = 80;
         var x = view.w-w-10;
         var y = face.y-face.r-h-20;
-        var r = 20;
+        var r = 16;
         var col = "#ffffff";
         fukidasi(x,y,w,h,r,col);
-        draw_text(x+r,y+r,mes.txt1,22,"#000000");
-        draw_text(x+r,y+r+32,mes.txt2,22,"#000000");
+        draw_text(x+r,y+r,mes.txt1,20,"#000000");
+        draw_text(x+r,y+r+32,mes.txt2,20,"#000000");
     }
 }
 
