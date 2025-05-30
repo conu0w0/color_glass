@@ -192,6 +192,18 @@ function draw_line(x1,y1,x2,y2,col){
     ctx.stroke();
 }
 
+function draw_round_rect(x, y, w, h, r, col){
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    ctx.fill();
+}
+
 function draw_circle(x,y,r, col) {
     ctx.fillStyle = col;
     ctx.beginPath();
@@ -219,7 +231,6 @@ function draw_fade(x,y,w,h,col,a) {
 // 遊戲用變數
 var draw_request = false;
 var counter = 0;
-var cols = ["#0000ff","#68e2f8","#ffff00","#107708","#16fa05","#c74cfb","#ff0084","#fe91b9","#ff7800","#771339"];
 var selected = 0;
 var linewidth = 4;
 var resetbutton = {x:50, y:50, r:20, col:"#ffffff", visible:true};
@@ -578,61 +589,59 @@ function draw_game(){
     // 畫出貓貓臉
     var x = face.x;
     var y = face.y;
-    var r = face.r;
+    var size = face.r * 2; // 臉的邊長
+    var r = 20; // 圓角半徑
+
     ctx.lineWidth = 3;
     ctx.strokeStyle = resetbutton.col;
     ctx.fillStyle = resetbutton.col;
 
-    // 圓臉
-    draw_circle(x, y, r, resetbutton.col);
+    // 畫圓角方形臉
+    draw_round_rect(x - size/2, y - size/2, size, size, r, resetbutton.col);
+    ctx.stroke();
 
     // 左耳
     ctx.beginPath();
-    ctx.moveTo(x - r + 8, y - r + 8);
-    ctx.lineTo(x - r + 20, y - r - 10);
-    ctx.lineTo(x - r + 32, y - r + 8);
+    ctx.moveTo(x - size/2 + 10, y - size/2 + 10);
+    ctx.lineTo(x - size/2 + 20, y - size/2 - 10);
+    ctx.lineTo(x - size/2 + 30, y - size/2 + 10);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
     // 右耳
     ctx.beginPath();
-    ctx.moveTo(x + r - 8, y - r + 8);
-    ctx.lineTo(x + r - 20, y - r - 10);
-    ctx.lineTo(x + r - 32, y - r + 8);
+    ctx.moveTo(x + size/2 - 10, y - size/2 + 10);
+    ctx.lineTo(x + size/2 - 20, y - size/2 - 10);
+    ctx.lineTo(x + size/2 - 30, y - size/2 + 10);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
     // 眼睛
-    draw_circle(x - 10, y - 5, 5, "#000000");
-    draw_circle(x + 10, y - 5, 5, "#000000");
+    draw_circle(x - 13, y - 5, 5, "#000000");
+    draw_circle(x + 13, y - 5, 5, "#000000");
 
-    // 嘴巴
-    if( face.pat==0 ){
-        // ω 嘴
+    // ω 嘴
+    if( face.pat == 0 ){
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 2;
-        // 左弧
+        ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.arc(x - 4, y + 10, 4, Math.PI * 0.2, Math.PI * 0.8, false);
         ctx.stroke();
-        // 右弧
         ctx.beginPath();
         ctx.arc(x + 4, y + 10, 4, Math.PI * 0.2, Math.PI * 0.8, false);
         ctx.stroke();
-        }else if( face.pat==1 ){
-        // 平口
+    }else if( face.pat == 1 ){
         ctx.strokeStyle = "#000000";
         ctx.beginPath();
         ctx.moveTo(x - 6, y + 8);
         ctx.lineTo(x + 6, y + 8);
         ctx.stroke();
-        }else if( face.pat==2 ){
-        // U型嘴
+    }else if( face.pat == 2 ){
         ctx.strokeStyle = "#000000";
         ctx.beginPath();
-        ctx.arc( x, y + 10, 6, 0, Math.PI, false );
+        ctx.arc(x, y + 10, 6, 0, Math.PI, false);
         ctx.stroke();
     }
 
@@ -731,5 +740,14 @@ function setGrid(n){
     ymax = n;
     cel_w = 320 / n;
     cel_h = 320 / n;
+    update_colors();
     init_game();
+}
+
+function update_colors(){
+    cols = [
+        "#0000ff","#68e2f8","#ffff00","#107708","#16fa05","#c74cfb",
+        "#ff0084","#fe91b9","#ff7800","#771339","#f54242","#42f554" 
+    ];
+    cols = cols.slice(0, color_count);
 }
