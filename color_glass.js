@@ -325,6 +325,22 @@ function start_stage(){
     start_wait();
 }
 
+// 取得目前滑鼠在哪個格子
+function get_cn(){
+    var i,j;
+    var mx = mouse.x;
+    var my = mouse.y;
+    var n = -1;
+    for( i = 0; i < ymax; i++ ){
+        for( j = 0; j < xmax; j++ ){
+            if( mx < cel[i][j].x || mx >= cel[i][j].x + cel_w ) continue;
+            if( my < cel[i][j].y || my >= cel[i][j].y + cel_h ) continue;
+            n = i * xmax + j;
+        }
+    }
+    return n;
+}
+
 // 等待玩家點擊
 function start_wait(){
     for( var i=0; i<ymax; i++ ){
