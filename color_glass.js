@@ -718,6 +718,7 @@ function click_button(){
         var btn = buttons[i];
         if (mouse.x >= btn.x && mouse.x <= btn.x + btn.w &&
             mouse.y >= btn.y && mouse.y <= btn.y + btn.h) {
+            se_button.currentTime = 0;
             se_button.play();
             setGrid(btn.grid);
             return true;
@@ -735,6 +736,8 @@ function click_reset(){
     var r = resetbutton.r+4;
     if( mx<x-r || mx>x+r ) return false;
     if( my<y-r || my>y+r ) return false;
+    se_button.currentTime = 0;
+    se_button.play();
     return true;
 }
 
