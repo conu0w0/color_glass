@@ -16,3 +16,11 @@
 ## 作者
 
 這個遊戲是 國立臺東大學 綠資一 林奕宏 在 網頁程式設計 課程期末專案製作。
+
+## 音樂素材來源
+
+**BGM 背景音樂**  
+[甘茶の音楽工房](https://amachamusic.chagasi.com/index.html)
+
+**音效 SE**  
+[効果音ラボ](https://soundeffect-lab.info/)
