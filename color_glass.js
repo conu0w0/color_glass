@@ -236,12 +236,14 @@ function draw_fade(x,y,w,h,col,a) {
 var draw_request = false;
 var counter = 0;
 
+// 全部 18 色
 var all_colors = [
     "#0000ff","#68e2f8","#ffff00","#107708","#16fa05","#c74cfb",
     "#ff0084","#fe91b9","#ff7800","#771339","#f54242","#42f554",
-    "#ffa500","#ff1493","#00ced1","#ff4500","#8a2be2","#7fff00"
+    "#e600e6","#00ffff","#ff3333","#3399ff","#ffcc00","#00ff99"
 ];
-var cols = [];
+
+var cols = []; // 實際使用顏色
 var selected = 0;
 var linewidth = 4;
 var resetbutton = {x:50, y:50, r:20, col:"#ffffff", visible:true};
@@ -258,6 +260,7 @@ var cel_h = 320 / 3;
 var xadd = [1,0,-1,0];
 var yadd = [0,1,0,-1];
 
+// 按鈕（active 狀態新增 active: true/false）
 var buttons = [
     {x: 30, y: 100, w: 80, h: 40, label: "3x3", grid: 3, active: true},
     {x: 30, y: 150, w: 80, h: 40, label: "4x4", grid: 4, active: false},
@@ -286,17 +289,14 @@ function init_game() {
 
 // 開始新關卡
 function start_stage(){
-    update_colors();  // 每次開始關卡重新挑選顏色
-
     var i,j,k;
     for( i=0; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
             for( k=0; k<4; k++ ){
-                cel[i][j].col[k] = Math.floor(Math.random() * cols.length);
+                cel[i][j].col[k] = Math.floor(Math.random()*cols.length);
             }
         }
     }
-
     for( i=1; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
             cel[i][j].col[3] = cel[i-1][j].col[1];
@@ -307,7 +307,6 @@ function start_stage(){
             cel[i][j].col[2] = cel[i][j-1].col[0];
         }
     }
-
     for( i=0; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
             var cx = Math.floor(Math.random()*xmax);
@@ -347,10 +346,10 @@ function start_wait(){
     click_func = first_click;
 }
 
-// 第一次點擊
-function first_click() {
+// 玩家第一次點擊
+function first_click(){
     bgm.play();
-    if (click_reset()) {
+    if( click_reset() ){
         start_stage();
         return;
     }
@@ -358,85 +357,18 @@ function first_click() {
         return;
     }
     var n = get_cn();
-    if (n < 0) return;
+    if( n<0 ) return;
 
     se_click.play();
 
     selected = n;
-    for (var i = 0; i < ymax; i++) {
-        for (var j = 0; j < xmax; j++) {
-            cel[i][j].prio = (i * xmax + j == n);
+    for( i=0; i<ymax; i++ ){
+        for( j=0; j<xmax; j++ ){
+            cel[i][j].prio = ( i*xmax+j==n );
         }
     }
     timer_func = draw_selected;
     click_func = second_click;
-}
-
-// 更新目前顏色
-function update_colors(){
-    var color_count = 10 + (xmax - 3) * 3;  // 3x3 → 10色, 4x4 → 13色, 5x5 → 16色
-    if (color_count > all_colors.length) color_count = all_colors.length;
-
-    cols = [];
-    let shuffled = all_colors.slice();
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    for (let i = 0; i < color_count; i++) {
-        cols.push(shuffled[i]);
-    }
-
-    console.log("目前顏色數量：" + cols.length);
-}
-
-// 判斷是否按到網格按鈕
-function click_button(){
-    for (var i = 0; i < buttons.length; i++) {
-        var btn = buttons[i];
-        if (mouse.x >= btn.x && mouse.x <= btn.x + btn.w &&
-            mouse.y >= btn.y && mouse.y <= btn.y + btn.h) {
-
-            if (btn.active) {
-                // 已經是目前模式，不能點
-                return true;
-            }
-
-            // 切換模式
-            se_button.play();
-            setGrid(btn.grid);
-            for (var j = 0; j < buttons.length; j++) {
-                buttons[j].active = false;
-            }
-            btn.active = true;
-            return true;
-        }
-    }
-    return false;
-}
-
-// 判斷是否按到重設按鈕
-function click_reset(){
-    var mx = mouse.x;
-    var my = mouse.y;
-    var x = resetbutton.x;
-    var y = resetbutton.y;
-    var r = resetbutton.r+4;
-    if( mx<x-r || mx>x+r ) return false;
-    if( my<y-r || my>y+r ) return false;
-
-    se_button.play();
-    return true;
-}
-
-// 設定棋盤格數
-function setGrid(n){
-    xmax = n;
-    ymax = n;
-    cel_w = 320 / n;
-    cel_h = 320 / n;
-    init_game();
 }
 
 // 主畫面繪製
@@ -492,13 +424,8 @@ function draw_game(){
     // 畫出切換按鈕
     for (var i = 0; i < buttons.length; i++) {
         var btn = buttons[i];
-        // 如果當前 active，畫不同顏色
-        var isActive = (btn.grid == xmax);
-        var bgCol = isActive ? "#ffcc00" : "#ffffff";  // active 黃色
-        var textCol = isActive ? "#000000" : "#000000";
-
-        draw_round_rect(btn.x, btn.y, btn.w, btn.h, 8, bgCol);
-
+        var btn_color = (btn.grid === current_grid) ? "#ffcc00" : "#ffffff"; // 高亮當前
+        draw_round_rect(btn.x, btn.y, btn.w, btn.h, 8, btn_color);
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -506,11 +433,10 @@ function draw_game(){
         ctx.arcTo(btn.x + btn.w, btn.y, btn.x + btn.w, btn.y + btn.h, 8);
         ctx.arcTo(btn.x + btn.w, btn.y + btn.h, btn.x, btn.y + btn.h, 8);
         ctx.arcTo(btn.x, btn.y + btn.h, btn.x, btn.y, 8);
-        ctx.arcTo(btn.x, btn.y, btn.x + btn.w, btn.y, 8);
+        ctx.arcTo(btn.x, btn.y, btn.x + btn.w, btn.y, 8);    
         ctx.closePath();
         ctx.stroke();
-
-        ctx.fillStyle = textCol;
+        ctx.fillStyle = "#000000";
         ctx.font = "20px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -520,14 +446,14 @@ function draw_game(){
     // 畫出貓貓臉
     var x = face.x;
     var y = face.y;
-    var size = face.r * 2;
-    var r = 20;
+    var size = face.r * 2; // 臉的邊長
+    var r = 20; // 圓角半徑
 
     ctx.lineWidth = 3;
     ctx.strokeStyle = resetbutton.col;
     ctx.fillStyle = resetbutton.col;
 
-    // 圓角方臉
+    // 畫圓角方形臉
     draw_round_rect(x - size/2, y - size/2, size, size, r, resetbutton.col);
     ctx.stroke();
 
@@ -584,7 +510,7 @@ function draw_game(){
         var bubble_h = 80;
         var bubble_r = 16;
         var bubble_x = face.x - bubble_w / 2;
-        var bubble_y = face.y - face.r - bubble_h - 30;
+        var bubble_y = face.y - face.r - bubble_h - 30; // 調整高度
 
         fukidasi(bubble_x, bubble_y, bubble_w, bubble_h, bubble_r, "#ffffff");
         draw_text(bubble_x + bubble_r, bubble_y + bubble_r, mes.txt1, 20, "#000000");
@@ -629,4 +555,85 @@ function fukidasi(x, y, w, h, r, col) {
     ctx.arc(x+r, y+r, r, Math.PI*3/2, Math.PI, true);
     ctx.closePath();
     ctx.fill();
+}
+
+// 判斷是否按到網格按鈕
+function click_button(){
+    for (var i = 0; i < buttons.length; i++) {
+        var btn = buttons[i];
+        // 如果是當前模式，不能按
+        if( btn.grid === current_grid ) continue;
+
+        if (mouse.x >= btn.x && mouse.x <= btn.x + btn.w &&
+            mouse.y >= btn.y && mouse.y <= btn.y + btn.h) {
+            se_button.play();
+            setGrid(btn.grid);
+            return true;
+        }
+    }
+    return false;
+}
+
+// 判斷是否按到重設按鈕
+function click_reset(){
+    var mx = mouse.x;
+    var my = mouse.y;
+    var x = resetbutton.x;
+    var y = resetbutton.y;
+    var r = resetbutton.r+4;
+    if( mx<x-r || mx>x+r ) return false;
+    if( my<y-r || my>y+r ) return false;
+    se_button.play();
+    return true;
+}
+
+// 判斷是否按到表情臉
+function click_face(){
+    var mx = mouse.x;
+    var my = mouse.y;
+    var x = face.x;
+    var y = face.y;
+    var r = face.r+4;
+    if( mx<x-r || mx>x+r ) return false;
+    if( my<y-r || my>y+r ) return false;
+    return true;
+}
+
+// 切換關卡大小
+function setGrid(n){
+    xmax = n;
+    ymax = n;
+    cel_w = 320 / n;
+    cel_h = 320 / n;
+    current_grid = n; // 更新當前模式
+    update_colors();
+    init_game();
+}
+
+// 更新顏色表
+function update_colors(){
+    // 完整 18 色
+    var full_colors = [
+        "#0000ff","#68e2f8","#ffff00","#107708","#16fa05","#c74cfb",
+        "#ff0084","#fe91b9","#ff7800","#771339","#f54242","#42f554",
+        "#f58c42","#42c1f5","#9f42f5","#f542b0","#f5e342","#42f5e9"
+    ];
+
+    var color_count = 0;
+    if (current_grid === 3) color_count = 10;
+    else if (current_grid === 4) color_count = 13;
+    else if (current_grid === 5) color_count = 15;
+
+    // 打亂顏色
+    var shuffled = full_colors.slice();
+    for (var i = shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = shuffled[i];
+        shuffled[i] = shuffled[j];
+        shuffled[j] = temp;
+    }
+
+    // 取前 color_count 個
+    cols = shuffled.slice(0, color_count);
+    console.log("目前顏色數量：" + cols.length);
 }
