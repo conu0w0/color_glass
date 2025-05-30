@@ -38,8 +38,8 @@ var timer = {st:0, ed:0}; // 計時器開始與結束時間
 var xmax = 3;
 var ymax = 3;
 var cel = new Array();
-var cel_w = 132;
-var cel_h = 132;
+var cel_w = 110;
+var cel_h = 110;
 var xadd = [1,0,-1,0];
 var yadd = [0,1,0,-1];
 
@@ -474,66 +474,107 @@ function click_face(){
     return true;
 }
 
-function draw_cel(cx,cy){
-	var w = cel_w/2;
-	var h = cel_h/2;
-	var x = cel[cy][cx].x+w;
-	var y = cel[cy][cx].y+h;
-	var a = 0.9;
-	triangle(x,y,x+w,y-h,x+w,y+h,cols[cel[cy][cx].col[0]],a);
-	triangle(x,y,x+w,y+h,x-w,y+h,cols[cel[cy][cx].col[1]],a);
-	triangle(x,y,x-w,y+h,x-w,y-h,cols[cel[cy][cx].col[2]],a);
-	triangle(x,y,x-w,y-h,x+w,y-h,cols[cel[cy][cx].col[3]],a);
-	if( linewidth>0 ){
+function draw_game(){
+	var i,j;
+	cls();
+	
+	ctx.lineWidth = linewidth;
+	ctx.beginPath();
+	ctx.fillStyle = "#0088ff";
+	ctx.fillRect(cel[0][0].ox,cel[0][0].oy,cel_w*xmax,cel_h*ymax);
+
+	ctx.strokeStyle = "#000000";
+	for( i=0; i<ymax; i++ ){
+		for( j=0; j<xmax; j++ ){
+			if( !cel[i][j].prio ) draw_cel(j,i);
+		}
+	}
+	for( i=0; i<ymax; i++ ){
+		for( j=0; j<xmax; j++ ){
+			if( cel[i][j].prio ) draw_cel(j,i);
+		}
+	}
+	
+	// 畫出重設按鈕
+	if( resetbutton.visible ){
+		ctx.lineWidth = 3;
+		ctx.strokeStyle = resetbutton.col;
+		ctx.fillStyle = resetbutton.col;
 		ctx.beginPath();
-		ctx.strokeRect(x-w,y-h,cel_w,cel_h);
-		draw_line(x-w,y-h,x+w,y+h,"#000000");
-		draw_line(x-w,y+h,x+w,y-h,"#000000");
+		var x = resetbutton.x;
+		var y = resetbutton.y;
+		var r = resetbutton.r;
+		ctx.arc( x, y, r, 0, Math.PI*20/180, true );
+		ctx.stroke();
+		ctx.beginPath();
+		x += r/8;	// 箭頭
+		ctx.moveTo(x+r-r*2/3,y-r/3);
+		ctx.lineTo(x+r,y);
+		ctx.lineTo(x+r,y-r*3/4);
+		ctx.fill();
+		ctx.stroke();
+	}
+	
+	// 畫出表情臉
+	var x = face.x;
+	var y = face.y;
+	var r = face.r;
+	ctx.lineWidth = 3;
+	ctx.strokeStyle = resetbutton.col;
+	ctx.fillStyle = resetbutton.col;
+	draw_circle(x,y,r,resetbutton.col);
+	draw_circle(x-13,y-9,6,"#000000");
+	draw_circle(x+13,y-9,6,"#000000");
+	var w = 18;
+	if( face.pat==0 ){
+		draw_line(x-w/2,y+16,x+w/2,y+16, "#000000");
+	}else if( face.pat==1 ){
+		draw_rect(x-w/2,y+10,w,12, "#000000");
+	}else if (face.pat==2 ){
+		ctx.strokeStyle = "#000000";
+		ctx.beginPath();
+		ctx.arc( x, y+8, w/2, Math.PI, 0, true );
+		ctx.stroke();
+	}
+
+	// 畫出訊息氣泡
+	if( mes.exist ){	
+		var w = 160;
+		var h = 100;
+		var x = view.w-w-10;
+		var y = face.y-face.r-h-20;
+		var r = 20;
+		var col = "#ffffff";
+		fukidasi(x,y,w,h,r,col);
+		draw_text(x+r,y+r,mes.txt1,22,"#000000");
+		draw_text(x+r,y+r+32,mes.txt2,22,"#000000");
 	}
 }
 
-function draw_game() {
-    var i, j;
-    // 棋盤的位置資訊
-    var board_x = cel[0][0].ox;
-    var board_y = cel[0][0].oy;
-    var board_w = cel_w * xmax;
-    var board_h = cel_h * ymax;
-
-    // 設定臉的位置 → 棋盤右邊，垂直置中
-    face.x = board_x + board_w + 50;
-    face.y = board_y + board_h / 2;
-
-    // 背景清空
+// 主畫面繪製
+function draw_game(){
+    var i,j;
     cls();
-
-    // 畫棋盤背景 + glow 效果
-    ctx.save();
-    ctx.shadowColor = 'rgba(255, 255, 255, 0.2)';
-    ctx.shadowBlur = 20;
-    ctx.fillStyle = '#0088ff';
-    ctx.fillRect(board_x, board_y, board_w, board_h);
-    ctx.restore();
-
-    // 畫棋盤格子
+    
     ctx.lineWidth = linewidth;
+    ctx.beginPath();
+    ctx.fillStyle = "#0088ff";
+    ctx.fillRect(cel[0][0].ox,cel[0][0].oy,cel_w*xmax,cel_h*ymax);
+
     ctx.strokeStyle = "#000000";
-
-    // 先畫非選中格
-    for (var i = 0; i < ymax; i++) {
-        for (var j = 0; j < xmax; j++) {
-            if (!cel[i][j].prio) draw_cel(j, i);
+    for( i=0; i<ymax; i++ ){
+        for( j=0; j<xmax; j++ ){
+            if( !cel[i][j].prio ) draw_cel(j,i);
         }
     }
-    // 再畫選中格（在上層）
-    for (var i = 0; i < ymax; i++) {
-        for (var j = 0; j < xmax; j++) {
-            if (cel[i][j].prio) draw_cel(j, i);
+    for( i=0; i<ymax; i++ ){
+        for( j=0; j<xmax; j++ ){
+            if( cel[i][j].prio ) draw_cel(j,i);
         }
     }
-
-    // 畫重設按鈕（固定畫面左上）
-    if (resetbutton.visible) {
+    
+    // 畫出重設按鈕
+    if( resetbutton.visible ){
         ctx.lineWidth = 3;
         ctx.strokeStyle = resetbutton.col;
         ctx.fillStyle = resetbutton.col;
@@ -541,59 +582,109 @@ function draw_game() {
         var x = resetbutton.x;
         var y = resetbutton.y;
         var r = resetbutton.r;
-        ctx.arc(x, y, r, 0, Math.PI * 20 / 180, true);
+        ctx.arc( x, y, r, 0, Math.PI*20/180, true );
         ctx.stroke();
-
         ctx.beginPath();
-        x += r / 8; // 箭頭
-        ctx.moveTo(x + r - r * 2 / 3, y - r / 3);
-        ctx.lineTo(x + r, y);
-        ctx.lineTo(x + r, y - r * 3 / 4);
+        x += r/8;    // 箭頭
+        ctx.moveTo(x+r-r*2/3,y-r/3);
+        ctx.lineTo(x+r,y);
+        ctx.lineTo(x+r,y-r*3/4);
         ctx.fill();
         ctx.stroke();
     }
-
-    // 畫表情臉
+    
+    // 畫出表情臉
     var x = face.x;
     var y = face.y;
     var r = face.r;
     ctx.lineWidth = 3;
     ctx.strokeStyle = resetbutton.col;
     ctx.fillStyle = resetbutton.col;
-
-    // 臉
-    draw_circle(x, y, r, face.pat == 0 ? "#ffffff" : "#ffffff"); // 白臉
-
-    // 眼睛
-    draw_circle(x - 13, y - 9, 6, "#000000");
-    draw_circle(x + 13, y - 9, 6, "#000000");
-
-    // 嘴巴
+    draw_circle(x,y,r,resetbutton.col);
+    draw_circle(x-13,y-9,6,"#000000");  // 左眼
+    draw_circle(x+13,y-9,6,"#000000");  // 右眼
     var w = 18;
-    if (face.pat == 0) {
-        draw_line(x - w / 2, y + 16, x + w / 2, y + 16, "#000000"); // 笑
-    } else if (face.pat == 1) {
-        draw_rect(x - w / 2, y + 10, w, 12, "#000000"); // 平口
-    } else if (face.pat == 2) {
+    if( face.pat==0 ){
+        draw_line(x-w/2,y+16,x+w/2,y+16, "#000000");  // 笑
+    }else if( face.pat==1 ){
+        draw_rect(x-w/2,y+10,w,12, "#000000");  // 平口
+    }else if (face.pat==2 ){
         ctx.strokeStyle = "#000000";
         ctx.beginPath();
-        ctx.arc(x, y + 8, w / 2, Math.PI, 0, true); // 彎嘴
+        ctx.arc( x, y+8, w/2, Math.PI, 0, true ); // 笑彎口
         ctx.stroke();
     }
 
-    // 畫氣泡訊息（如果有）
-    if (mes.exist) {
-        var w = 160;
+    // 畫出訊息氣泡
+    if( mes.exist ){    
+        var w = 200;
         var h = 100;
-        var fx = face.x;
-        var fy = face.y;
-        var bubble_x = fx - w - 30; // 左邊
-        var bubble_y = fy - h / 2;
-        var r = 20;
-        var col = "#ffffff";
 
-        fukidasi(bubble_x, bubble_y, w, h, r, col);
-        draw_text(bubble_x + r, bubble_y + r, mes.txt1, 22, "#000000");
-        draw_text(bubble_x + r, bubble_y + r + 32, mes.txt2, 22, "#000000");
+    // 改成置中下方，不遮拼圖
+    var x = (view.w - w) / 2;
+    var y = view.h - h - 20;  // 離畫面底 20px
+
+    var r = 20;
+    var col = "#ffffff";
+    fukidasi(x, y, w, h, r, col);
+    draw_text(x + r, y + r, mes.txt1, 22, "#000000");
+    draw_text(x + r, y + r + 32, mes.txt2, 22, "#000000");
     }
+}
+
+// 畫出單一格子
+function draw_cel(cx,cy){
+    var w = cel_w/2;
+    var h = cel_h/2;
+    var x = cel[cy][cx].x+w;
+    var y = cel[cy][cx].y+h;
+    var a = 0.95;
+
+    // 加毛玻璃效果
+    ctx.save();
+    ctx.filter = 'blur(5px) brightness(1.1)';
+    triangle(x,y,x+w,y-h,x+w,y+h,cols[cel[cy][cx].col[0]],a);
+    triangle(x,y,x+w,y+h,x-w,y+h,cols[cel[cy][cx].col[1]],a);
+    triangle(x,y,x-w,y+h,x-w,y-h,cols[cel[cy][cx].col[2]],a);
+    triangle(x,y,x-w,y-h,x+w,y-h,cols[cel[cy][cx].col[3]],a);
+    ctx.restore();
+
+    // 加紋理線條
+    ctx.save();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x-w, y-h);
+    ctx.lineTo(x+w, y+h);
+    ctx.moveTo(x+w, y-h);
+    ctx.lineTo(x-w, y+h);
+    ctx.stroke();
+    ctx.restore();
+
+    // 外框
+    if( linewidth>0 ){
+        ctx.beginPath();
+        ctx.strokeRect(x-w,y-h,cel_w,cel_h);
+        draw_line(x-w,y-h,x+w,y+h,"#000000");
+        draw_line(x-w,y+h,x+w,y-h,"#000000");
+    }
+}
+
+
+// 畫出氣泡訊息框
+function fukidasi(x, y, w, h, r, col) {
+    var ss = 10;
+    var tt = 10;
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.moveTo(x, y + r);    // 左上
+    ctx.arc(x + r,   y + h - r, r, Math.PI, Math.PI / 2, true);    // 左下
+    ctx.lineTo(x+w*2/4-ss, y+h);
+    ctx.lineTo(x+w*2/4, y+h+tt);
+    ctx.lineTo(x+w*2/4+ss, y+h);
+    ctx.arc(x+w-r, y+h-r, r, Math.PI/2, 0, true);        // 右下
+    ctx.arc(x + w - r, y + r,   r, 0, Math.PI * 3 / 2, true);        // 右上
+    ctx.arc(x+r,   y+r,   r, Math.PI*3/2, Math.PI, true);    // 回到左上
+    ctx.closePath();
+    ctx.fill();
 }
