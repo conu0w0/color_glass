@@ -39,7 +39,7 @@ function init_sound(){
     se_button.preload = "auto";
 
     for( var i=0; i<sound_list.length; i++ ){
-        sound_list[i].addEventListener('canplaythrough', onSoundLoaded, false);
+        sound_list[i].addEventListener('canplaythrough', onSoundLoaded, { once: true });
         sound_list[i].load();
     }
 }
