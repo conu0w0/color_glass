@@ -540,15 +540,18 @@ function draw_game(){
 
     // 畫出訊息氣泡
     if( mes.exist ){    
-        var w = 160;
+        var w = 200;
         var h = 100;
-        var x = view.w-w-10;
-        var y = face.y-face.r-h-20;
-        var r = 20;
-        var col = "#ffffff";
-        fukidasi(x,y,w,h,r,col);
-        draw_text(x+r,y+r,mes.txt1,22,"#000000");
-        draw_text(x+r,y+r+32,mes.txt2,22,"#000000");
+
+    // 改成置中下方，不遮拼圖
+    var x = (view.w - w) / 2;
+    var y = view.h - h - 20;  // 離畫面底 20px
+
+    var r = 20;
+    var col = "#ffffff";
+    fukidasi(x, y, w, h, r, col);
+    draw_text(x + r, y + r, mes.txt1, 22, "#000000");
+    draw_text(x + r, y + r + 32, mes.txt2, 22, "#000000");
     }
 }
 
