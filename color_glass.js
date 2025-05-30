@@ -231,6 +231,7 @@ function draw_fade(x,y,w,h,col,a) {
 // 遊戲用變數
 var draw_request = false;
 var counter = 0;
+var cols = ["#0000ff","#68e2f8","#ffff00","#107708","#16fa05","#c74cfb","#ff0084","#fe91b9","#ff7800","#771339","#f54242","#42f554"];
 var selected = 0;
 var linewidth = 4;
 var resetbutton = {x:50, y:50, r:20, col:"#ffffff", visible:true};
