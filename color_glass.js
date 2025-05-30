@@ -12,9 +12,10 @@ var bgm = new Audio("sounds/bgm.mp3");
 var se_click = new Audio("sounds/click.mp3");
 var se_swap = new Audio("sounds/swap.mp3");
 var se_clear = new Audio("sounds/clear.mp3");
+var se_button = new Audio("sounds/button.mp3");
 
 // 要載入的音效列表
-var sound_list = [bgm, se_click, se_swap, se_clear];
+var sound_list = [bgm, se_click, se_swap, se_clear, se_buttom];
 var sound_loaded = 0;
 var sound_total = sound_list.length;
 var loading_done = false;
@@ -33,6 +34,9 @@ function init_sound(){
 
     se_clear.volume = 0.7;
     se_clear.preload = "auto";
+
+    se_button.volume = 0.6;
+    se_button.preload = "auto";
 
     for( var i=0; i<sound_list.length; i++ ){
         sound_list[i].addEventListener('canplaythrough', onSoundLoaded, false);
@@ -576,10 +580,17 @@ function draw_game(){
     // 畫出切換按鈕
     for (var i = 0; i < buttons.length; i++) {
         var btn = buttons[i];
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(btn.x, btn.y, btn.w, btn.h);
+        draw_round_rect(btn.x, btn.y, btn.w, btn.h, 8, "#ffffff");
         ctx.strokeStyle = "#000000";
-        ctx.strokeRect(btn.x, btn.y, btn.w, btn.h);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(btn.x + 8, btn.y);
+        ctx.arcTo(btn.x + btn.w, btn.y, btn.x + btn.w, btn.y + btn.h, 8);
+        ctx.arcTo(btn.x + btn.w, btn.y + btn.h, btn.x, btn.y + btn.h, 8);
+        ctx.arcTo(btn.x, btn.y + btn.h, btn.x, btn.y, 8);
+        ctx.arcTo(btn.x, btn.y, btn.x + btn.w, btn.y, 8);    
+        ctx.closePath();
+        ctx.stroke();
         ctx.fillStyle = "#000000";
         ctx.font = "20px sans-serif";
         ctx.textAlign = "center";
@@ -626,39 +637,39 @@ function draw_game(){
     // ω 嘴
     if( face.pat == 0 ){
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 4; // 加粗
+        ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.arc(x - 4, y + 10, 4, Math.PI * 0.2, Math.PI * 0.8, false);
+        ctx.arc(x - 4, y + 10, 4, Math.PI * 0.1, Math.PI * 0.9, false);
         ctx.stroke();
         ctx.beginPath();
-        ctx.arc(x + 4, y + 10, 4, Math.PI * 0.2, Math.PI * 0.8, false);
+        ctx.arc(x + 4, y + 10, 4, Math.PI * 0.1, Math.PI * 0.9, false);
         ctx.stroke();
     }else if( face.pat == 1 ){
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 4; // 這裡也順便加粗，保持一致
+        ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.moveTo(x - 6, y + 8);
         ctx.lineTo(x + 6, y + 8);
         ctx.stroke();
     }else if( face.pat == 2 ){
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 4; // 加粗
+        ctx.lineWidth = 4; 
         ctx.beginPath();
         ctx.arc(x, y + 10, 6, 0, Math.PI, false);
         ctx.stroke();
     }
 
-    // 畫出訊息氣泡
-    if( mes.exist ){
-        var w = 130;
-        var h = 80;
-        var x = view.w-w-10;
-        var y = face.y-face.r-h-20;
-        var r = 16;
-        var col = "#ffffff";
-        fukidasi(x,y,w,h,r,col);
-        draw_text(x+r,y+r,mes.txt1,20,"#000000");
-        draw_text(x+r,y+r+32,mes.txt2,20,"#000000");
+   // 畫出訊息氣泡
+    if (mes.exist) {
+        var bubble_w = 130;
+        var bubble_h = 80;
+        var bubble_r = 16;
+        var bubble_x = face.x - bubble_w / 2;
+        var bubble_y = face.y - face.r - bubble_h - 30; // 調整高度
+
+        fukidasi(bubble_x, bubble_y, bubble_w, bubble_h, bubble_r, "#ffffff");
+        draw_text(bubble_x + bubble_r, bubble_y + bubble_r, mes.txt1, 20, "#000000");
+        draw_text(bubble_x + bubble_r, bubble_y + bubble_r + 32, mes.txt2, 20, "#000000");
     }
 }
 
@@ -707,6 +718,7 @@ function click_button(){
         var btn = buttons[i];
         if (mouse.x >= btn.x && mouse.x <= btn.x + btn.w &&
             mouse.y >= btn.y && mouse.y <= btn.y + btn.h) {
+            se_button.play();
             setGrid(btn.grid);
             return true;
         }
