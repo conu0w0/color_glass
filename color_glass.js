@@ -235,6 +235,7 @@ function draw_fade(x,y,w,h,col,a) {
 // 遊戲用變數
 var draw_request = false;
 var counter = 0;
+var current_grid = 3;
 
 // 全部 18 色
 var all_colors = [
