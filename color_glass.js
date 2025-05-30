@@ -86,7 +86,6 @@ window.onload = function(){
     init_event_func();
     init_sound();
     frame_loop();
-    // 不直接 init_game()，loading 完成後會自動 start_game()
 }
 
 function start_game(){
@@ -232,10 +231,15 @@ var timer = {st:0, ed:0};
 var xmax = 3;
 var ymax = 3;
 var cel = new Array();
-var cel_w = 110;
-var cel_h = 110;
+var cel_w = 320 / 3;
+var cel_h = 320 / 3;
 var xadd = [1,0,-1,0];
 var yadd = [0,1,0,-1];
+var buttons = [
+    {x: 30, y: 100, w: 80, h: 40, label: "3x3", grid: 3},
+    {x: 30, y: 150, w: 80, h: 40, label: "4x4", grid: 4},
+    {x: 30, y: 200, w: 80, h: 40, label: "5x5", grid: 5},
+];
 
 // 遊戲初始化
 function init_game() {
@@ -321,6 +325,9 @@ function first_click(){
     bgm.play();
     if( click_reset() ){
         start_stage();
+        return;
+    }
+    if (click_button()) {
         return;
     }
     var n = get_cn();
@@ -554,25 +561,78 @@ function draw_game(){
         ctx.stroke();
     }
 
-    // 畫出表情臉
+    // 畫出切換按鈕
+    for (var i = 0; i < buttons.length; i++) {
+        var btn = buttons[i];
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(btn.x, btn.y, btn.w, btn.h);
+        ctx.strokeStyle = "#000000";
+        ctx.strokeRect(btn.x, btn.y, btn.w, btn.h);
+        ctx.fillStyle = "#000000";
+        ctx.font = "20px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(btn.label, btn.x + btn.w / 2, btn.y + btn.h / 2);
+    }
+
+    // 畫出貓貓臉
     var x = face.x;
     var y = face.y;
     var r = face.r;
     ctx.lineWidth = 3;
     ctx.strokeStyle = resetbutton.col;
     ctx.fillStyle = resetbutton.col;
-    draw_circle(x,y,r,resetbutton.col);
-    draw_circle(x-13,y-9,6,"#000000");
-    draw_circle(x+13,y-9,6,"#000000");
-    var w = 18;
+
+    // 圓臉
+    draw_circle(x, y, r, resetbutton.col);
+
+    // 左耳
+    ctx.beginPath();
+    ctx.moveTo(x - r + 8, y - r + 8);
+    ctx.lineTo(x - r + 20, y - r - 10);
+    ctx.lineTo(x - r + 32, y - r + 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 右耳
+    ctx.beginPath();
+    ctx.moveTo(x + r - 8, y - r + 8);
+    ctx.lineTo(x + r - 20, y - r - 10);
+    ctx.lineTo(x + r - 32, y - r + 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 眼睛
+    draw_circle(x - 10, y - 5, 5, "#000000");
+    draw_circle(x + 10, y - 5, 5, "#000000");
+
+    // 嘴巴
     if( face.pat==0 ){
-        draw_line(x-w/2,y+16,x+w/2,y+16, "#000000");
-    }else if( face.pat==1 ){
-        draw_rect(x-w/2,y+10,w,12, "#000000");
-    }else if (face.pat==2 ){
+        // ω 嘴
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        // 左弧
+        ctx.beginPath();
+        ctx.arc(x - 4, y + 10, 4, Math.PI * 0.2, Math.PI * 0.8, false);
+        ctx.stroke();
+        // 右弧
+        ctx.beginPath();
+        ctx.arc(x + 4, y + 10, 4, Math.PI * 0.2, Math.PI * 0.8, false);
+        ctx.stroke();
+        }else if( face.pat==1 ){
+        // 平口
         ctx.strokeStyle = "#000000";
         ctx.beginPath();
-        ctx.arc( x, y+8, w/2, Math.PI, 0, true );
+        ctx.moveTo(x - 6, y + 8);
+        ctx.lineTo(x + 6, y + 8);
+        ctx.stroke();
+        }else if( face.pat==2 ){
+        // U型嘴
+        ctx.strokeStyle = "#000000";
+        ctx.beginPath();
+        ctx.arc( x, y + 10, 6, 0, Math.PI, false );
         ctx.stroke();
     }
 
@@ -629,6 +689,19 @@ function fukidasi(x, y, w, h, r, col) {
     ctx.fill();
 }
 
+// 判斷是否按到網格按鈕
+function click_button(){
+    for (var i = 0; i < buttons.length; i++) {
+        var btn = buttons[i];
+        if (mouse.x >= btn.x && mouse.x <= btn.x + btn.w &&
+            mouse.y >= btn.y && mouse.y <= btn.y + btn.h) {
+            setGrid(btn.grid);
+            return true;
+        }
+    }
+    return false;
+}
+
 // 判斷是否按到重設按鈕
 function click_reset(){
     var mx = mouse.x;
@@ -651,4 +724,12 @@ function click_face(){
     if( mx<x-r || mx>x+r ) return false;
     if( my<y-r || my>y+r ) return false;
     return true;
+}
+
+function setGrid(n){
+    xmax = n;
+    ymax = n;
+    cel_w = 320 / n;
+    cel_h = 320 / n;
+    init_game();
 }
