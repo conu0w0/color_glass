@@ -347,6 +347,31 @@ function start_wait(){
     click_func = first_click;
 }
 
+// 第一次點擊
+function first_click() {
+    bgm.play();
+    if (click_reset()) {
+        start_stage();
+        return;
+    }
+    if (click_button()) {
+        return;
+    }
+    var n = get_cn();
+    if (n < 0) return;
+
+    se_click.play();
+
+    selected = n;
+    for (var i = 0; i < ymax; i++) {
+        for (var j = 0; j < xmax; j++) {
+            cel[i][j].prio = (i * xmax + j == n);
+        }
+    }
+    timer_func = draw_selected;
+    click_func = second_click;
+}
+
 // 更新目前顏色
 function update_colors(){
     var color_count = 10 + (xmax - 3) * 3;  // 3x3 → 10色, 4x4 → 13色, 5x5 → 16色
