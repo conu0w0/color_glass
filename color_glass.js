@@ -223,15 +223,6 @@ function draw_text(x, y, str, size, col) {
     ctx.fillText(str,x,y);
 }
 
-function draw_fade(x,y,w,h,col,a) {
-    if ( a < 0 ) a = 0;
-    if ( a > 100 ) a = 100;
-    ctx.globalAlpha = a / 100;
-    ctx.fillStyle = col;
-    ctx.fillRect(x,y,w,h);
-    ctx.globalAlpha = 1.0;
-}
-
 // 遊戲用變數
 var draw_request = false;
 var counter = 0;
@@ -746,4 +737,23 @@ function draw_cel(cx,cy){
         draw_line(x-w,y-h,x+w,y+h,"#000000");
         draw_line(x-w,y+h,x+w,y-h,"#000000");
     }
+}
+
+function update_colors(){
+    // 固定顏色 pool
+    let color_pool = [
+        "#0000ff","#68e2f8","#ffff00","#107708","#16fa05",
+        "#c74cfb","#ff0084","#fe91b9","#ff7800","#771339",
+        "#f54242","#42f554","#ffb347","#8a2be2","#ff69b4",
+        "#40e0d0","#ff6347","#adff2f","#ffa500","#00ced1"
+    ];
+
+    // 洗牌（Fisher-Yates 洗牌法）
+    for (let i = color_pool.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [color_pool[i], color_pool[j]] = [color_pool[j], color_pool[i]];
+    }
+
+    // 取前 color_count 個
+    cols = color_pool.slice(0, color_count);
 }
