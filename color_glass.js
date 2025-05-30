@@ -3,7 +3,7 @@ var context;
 var scalerate = 1;
 var FPS = 30;            // 畫面更新頻率（每秒30次）
 var touchdev = false;    // 是否為觸控裝置
-var view = { w: 960, h: 720 }; // 畫布大小
+var view = { w:640, h:480 }; // 畫布大小
 var mouse = { x:0, y:0, ox:0, oy:0 }; // 滑鼠座標
 var tickcount = 0;       // 計時器
 
@@ -474,83 +474,6 @@ function click_face(){
     return true;
 }
 
-function draw_game(){
-	var i,j;
-	cls();
-	
-	ctx.lineWidth = linewidth;
-	ctx.beginPath();
-	ctx.fillStyle = "#0088ff";
-	ctx.fillRect(cel[0][0].ox,cel[0][0].oy,cel_w*xmax,cel_h*ymax);
-
-	ctx.strokeStyle = "#000000";
-	for( i=0; i<ymax; i++ ){
-		for( j=0; j<xmax; j++ ){
-			if( !cel[i][j].prio ) draw_cel(j,i);
-		}
-	}
-	for( i=0; i<ymax; i++ ){
-		for( j=0; j<xmax; j++ ){
-			if( cel[i][j].prio ) draw_cel(j,i);
-		}
-	}
-	
-	// 畫出重設按鈕
-	if( resetbutton.visible ){
-		ctx.lineWidth = 3;
-		ctx.strokeStyle = resetbutton.col;
-		ctx.fillStyle = resetbutton.col;
-		ctx.beginPath();
-		var x = resetbutton.x;
-		var y = resetbutton.y;
-		var r = resetbutton.r;
-		ctx.arc( x, y, r, 0, Math.PI*20/180, true );
-		ctx.stroke();
-		ctx.beginPath();
-		x += r/8;	// 箭頭
-		ctx.moveTo(x+r-r*2/3,y-r/3);
-		ctx.lineTo(x+r,y);
-		ctx.lineTo(x+r,y-r*3/4);
-		ctx.fill();
-		ctx.stroke();
-	}
-	
-	// 畫出表情臉
-	var x = face.x;
-	var y = face.y;
-	var r = face.r;
-	ctx.lineWidth = 3;
-	ctx.strokeStyle = resetbutton.col;
-	ctx.fillStyle = resetbutton.col;
-	draw_circle(x,y,r,resetbutton.col);
-	draw_circle(x-13,y-9,6,"#000000");
-	draw_circle(x+13,y-9,6,"#000000");
-	var w = 18;
-	if( face.pat==0 ){
-		draw_line(x-w/2,y+16,x+w/2,y+16, "#000000");
-	}else if( face.pat==1 ){
-		draw_rect(x-w/2,y+10,w,12, "#000000");
-	}else if (face.pat==2 ){
-		ctx.strokeStyle = "#000000";
-		ctx.beginPath();
-		ctx.arc( x, y+8, w/2, Math.PI, 0, true );
-		ctx.stroke();
-	}
-
-	// 畫出訊息氣泡
-	if( mes.exist ){	
-		var w = 160;
-		var h = 100;
-		var x = view.w-w-10;
-		var y = face.y-face.r-h-20;
-		var r = 20;
-		var col = "#ffffff";
-		fukidasi(x,y,w,h,r,col);
-		draw_text(x+r,y+r,mes.txt1,22,"#000000");
-		draw_text(x+r,y+r+32,mes.txt2,22,"#000000");
-	}
-}
-
 // 主畫面繪製
 function draw_game(){
     var i,j;
@@ -617,18 +540,15 @@ function draw_game(){
 
     // 畫出訊息氣泡
     if( mes.exist ){    
-        var w = 200;
+        var w = 160;
         var h = 100;
-
-    // 改成置中下方，不遮拼圖
-    var x = (view.w - w) / 2;
-    var y = view.h - h - 20;  // 離畫面底 20px
-
-    var r = 20;
-    var col = "#ffffff";
-    fukidasi(x, y, w, h, r, col);
-    draw_text(x + r, y + r, mes.txt1, 22, "#000000");
-    draw_text(x + r, y + r + 32, mes.txt2, 22, "#000000");
+        var x = view.w-w-10;
+        var y = face.y-face.r-h-20;
+        var r = 20;
+        var col = "#ffffff";
+        fukidasi(x,y,w,h,r,col);
+        draw_text(x+r,y+r,mes.txt1,22,"#000000");
+        draw_text(x+r,y+r+32,mes.txt2,22,"#000000");
     }
 }
 
@@ -638,29 +558,12 @@ function draw_cel(cx,cy){
     var h = cel_h/2;
     var x = cel[cy][cx].x+w;
     var y = cel[cy][cx].y+h;
-    var a = 0.95;
-
-    // 加毛玻璃效果
-    ctx.save();
-    ctx.filter = 'blur(5px) brightness(1.1)';
+    var a = 0.9;
+    // 四邊三角形
     triangle(x,y,x+w,y-h,x+w,y+h,cols[cel[cy][cx].col[0]],a);
     triangle(x,y,x+w,y+h,x-w,y+h,cols[cel[cy][cx].col[1]],a);
     triangle(x,y,x-w,y+h,x-w,y-h,cols[cel[cy][cx].col[2]],a);
     triangle(x,y,x-w,y-h,x+w,y-h,cols[cel[cy][cx].col[3]],a);
-    ctx.restore();
-
-    // 加紋理線條
-    ctx.save();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x-w, y-h);
-    ctx.lineTo(x+w, y+h);
-    ctx.moveTo(x+w, y-h);
-    ctx.lineTo(x-w, y+h);
-    ctx.stroke();
-    ctx.restore();
-
     // 外框
     if( linewidth>0 ){
         ctx.beginPath();
@@ -669,7 +572,6 @@ function draw_cel(cx,cy){
         draw_line(x-w,y+h,x+w,y-h,"#000000");
     }
 }
-
 
 // 畫出氣泡訊息框
 function fukidasi(x, y, w, h, r, col) {
