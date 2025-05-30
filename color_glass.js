@@ -603,18 +603,18 @@ function draw_game(){
 
     // 左耳
     ctx.beginPath();
-    ctx.moveTo(x - size/2 + 10, y - size/2 + 10);
-    ctx.lineTo(x - size/2 + 20, y - size/2 - 10);
-    ctx.lineTo(x - size/2 + 30, y - size/2 + 10);
+    ctx.moveTo(x - size/2 + 5, y - size/2 + 15);
+    ctx.lineTo(x - size/2 + 25, y - size/2 - 15);
+    ctx.lineTo(x - size/2 + 45, y - size/2 + 15);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
     // 右耳
     ctx.beginPath();
-    ctx.moveTo(x + size/2 - 10, y - size/2 + 10);
-    ctx.lineTo(x + size/2 - 20, y - size/2 - 10);
-    ctx.lineTo(x + size/2 - 30, y - size/2 + 10);
+    ctx.moveTo(x + size/2 - 5, y - size/2 + 15);
+    ctx.lineTo(x + size/2 - 25, y - size/2 - 15);
+    ctx.lineTo(x + size/2 - 45, y - size/2 + 15);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -626,7 +626,7 @@ function draw_game(){
     // ω 嘴
     if( face.pat == 0 ){
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 4; // 加粗
         ctx.beginPath();
         ctx.arc(x - 4, y + 10, 4, Math.PI * 0.2, Math.PI * 0.8, false);
         ctx.stroke();
@@ -635,12 +635,14 @@ function draw_game(){
         ctx.stroke();
     }else if( face.pat == 1 ){
         ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 4; // 這裡也順便加粗，保持一致
         ctx.beginPath();
         ctx.moveTo(x - 6, y + 8);
         ctx.lineTo(x + 6, y + 8);
         ctx.stroke();
     }else if( face.pat == 2 ){
         ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 4; // 加粗
         ctx.beginPath();
         ctx.arc(x, y + 10, 6, 0, Math.PI, false);
         ctx.stroke();
@@ -741,6 +743,7 @@ function setGrid(n){
     ymax = n;
     cel_w = 320 / n;
     cel_h = 320 / n;
+    color_count = 10 + (n - 3);
     update_colors();
     init_game();
 }
