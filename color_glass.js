@@ -235,7 +235,13 @@ function draw_fade(x,y,w,h,col,a) {
 // 遊戲用變數
 var draw_request = false;
 var counter = 0;
-var cols = ["#0000ff","#68e2f8","#ffff00","#107708","#16fa05","#c74cfb","#ff0084","#fe91b9","#ff7800","#771339","#f54242","#42f554"];
+
+var all_colors = [
+    "#0000ff","#68e2f8","#ffff00","#107708","#16fa05","#c74cfb",
+    "#ff0084","#fe91b9","#ff7800","#771339","#f54242","#42f554",
+    "#ffa500","#ff1493","#00ced1","#ff4500","#8a2be2","#7fff00"
+];
+var cols = [];
 var selected = 0;
 var linewidth = 4;
 var resetbutton = {x:50, y:50, r:20, col:"#ffffff", visible:true};
@@ -251,10 +257,11 @@ var cel_w = 320 / 3;
 var cel_h = 320 / 3;
 var xadd = [1,0,-1,0];
 var yadd = [0,1,0,-1];
+
 var buttons = [
-    {x: 30, y: 100, w: 80, h: 40, label: "3x3", grid: 3},
-    {x: 30, y: 150, w: 80, h: 40, label: "4x4", grid: 4},
-    {x: 30, y: 200, w: 80, h: 40, label: "5x5", grid: 5},
+    {x: 30, y: 100, w: 80, h: 40, label: "3x3", grid: 3, active: true},
+    {x: 30, y: 150, w: 80, h: 40, label: "4x4", grid: 4, active: false},
+    {x: 30, y: 200, w: 80, h: 40, label: "5x5", grid: 5, active: false},
 ];
 
 // 遊戲初始化
@@ -279,14 +286,17 @@ function init_game() {
 
 // 開始新關卡
 function start_stage(){
+    update_colors();  // 每次開始關卡重新挑選顏色
+
     var i,j,k;
     for( i=0; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
             for( k=0; k<4; k++ ){
-                cel[i][j].col[k] = Math.floor(Math.random()*10);
+                cel[i][j].col[k] = Math.floor(Math.random() * cols.length);
             }
         }
     }
+
     for( i=1; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
             cel[i][j].col[3] = cel[i-1][j].col[1];
@@ -297,6 +307,7 @@ function start_stage(){
             cel[i][j].col[2] = cel[i][j-1].col[0];
         }
     }
+
     for( i=0; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
             var cx = Math.floor(Math.random()*xmax);
@@ -336,195 +347,71 @@ function start_wait(){
     click_func = first_click;
 }
 
-// 玩家第一次點擊
-function first_click(){
-    bgm.play();
-    if( click_reset() ){
-        start_stage();
-        return;
-    }
-    if (click_button()) {
-        return;
-    }
-    var n = get_cn();
-    if( n<0 ) return;
+// 更新目前顏色
+function update_colors(){
+    var color_count = 10 + (xmax - 3) * 3;  // 3x3 → 10色, 4x4 → 13色, 5x5 → 16色
+    if (color_count > all_colors.length) color_count = all_colors.length;
 
-    se_click.play();
-
-    selected = n;
-    for( i=0; i<ymax; i++ ){
-        for( j=0; j<xmax; j++ ){
-            cel[i][j].prio = ( i*xmax+j==n );
-        }
+    cols = [];
+    let shuffled = all_colors.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    timer_func = draw_selected;
-    click_func = second_click;
+
+    for (let i = 0; i < color_count; i++) {
+        cols.push(shuffled[i]);
+    }
+
+    console.log("目前顏色數量：" + cols.length);
 }
 
-// 取得目前滑鼠在哪個格子
-function get_cn(){
-    var i,j;
+// 判斷是否按到網格按鈕
+function click_button(){
+    for (var i = 0; i < buttons.length; i++) {
+        var btn = buttons[i];
+        if (mouse.x >= btn.x && mouse.x <= btn.x + btn.w &&
+            mouse.y >= btn.y && mouse.y <= btn.y + btn.h) {
+
+            if (btn.active) {
+                // 已經是目前模式，不能點
+                return true;
+            }
+
+            // 切換模式
+            se_button.play();
+            setGrid(btn.grid);
+            for (var j = 0; j < buttons.length; j++) {
+                buttons[j].active = false;
+            }
+            btn.active = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+// 判斷是否按到重設按鈕
+function click_reset(){
     var mx = mouse.x;
     var my = mouse.y;
-    var n=-1;
-    for( i=0; i<ymax; i++ ){
-        for( j=0; j<xmax; j++ ){
-            if( mx<cel[i][j].x || mx>=cel[i][j].x+cel_w ) continue;
-            if( my<cel[i][j].y || my>=cel[i][j].y+cel_h ) continue;
-            n = i*xmax+j;
-        }
-    }
-    return n;
-}
+    var x = resetbutton.x;
+    var y = resetbutton.y;
+    var r = resetbutton.r+4;
+    if( mx<x-r || mx>x+r ) return false;
+    if( my<y-r || my>y+r ) return false;
 
-// 點擊選中的動畫
-function draw_selected(){
-    var cx = Math.floor(selected%xmax);
-    var cy = Math.floor(selected/xmax);
-    counter++;
-    cel[cy][cx].y = cel[cy][cx].oy - 14*Math.sin(Math.PI*counter/12);
-    draw_request = true;
-}
-
-// 第二次點擊 → 交換格子
-function second_click(){
-    if( click_reset() ){
-        start_stage();
-        return;
-    }
-    var n = get_cn();
-    if( n<0 ) return;
-    if( n==selected ){
-        start_wait();
-        return;
-    }
-
-    var cx1 = Math.floor(selected%xmax);
-    var cy1 = Math.floor(selected/xmax);
-    var cx2 = Math.floor(n%xmax);
-    var cy2 = Math.floor(n/xmax);
-    cel[cy1][cx1].dx = cx2;
-    cel[cy1][cx1].dy = cy2;
-    cel[cy2][cx2].dx = cx1;
-    cel[cy2][cx2].dy = cy1;
-    cel[cy1][cx1].prio = true;
-    cel[cy2][cx2].prio = true;
-
-    cel[cy1][cx1].x = cel[cy1][cx1].ox-8;
-    cel[cy2][cx2].x = cel[cy2][cx2].ox-12;
-    cel[cy1][cx1].y = cel[cy1][cx1].oy-8;
-    cel[cy2][cx2].y = cel[cy2][cx2].oy-12;
-
-    counter=0;
-    init_event_func();
-    timer_func = move_cel;
-}
-
-// 執行交換動畫
-function move_cel(){
-    var i,j,k;
-    for( i=0; i<ymax; i++ ){
-        for( j=0; j<xmax; j++ ){
-            if( !cel[i][j].prio ) continue;
-            var dx = cel[i][j].dx;
-            var dy = cel[i][j].dy;
-            cel[i][j].x += (cel[dy][dx].ox-cel[i][j].x)/4;
-            cel[i][j].y += (cel[dy][dx].oy-cel[i][j].y)/4;
-        }
-    }
-    counter++;
-    if(counter<6){
-        draw_request = true;
-        return;
-    }
-
-    se_swap.play();
-
-    for( i=0; i<ymax; i++ ){
-        for( j=0; j<xmax; j++ ){
-            cel[i][j].x = cel[i][j].ox;
-            cel[i][j].y = cel[i][j].oy;
-            if( !cel[i][j].prio ) continue;
-            var dx = cel[i][j].dx;
-            var dy = cel[i][j].dy;
-            for( k=0; k<4; k++ ){
-                cel[dy][dx].col[k] = cel[i][j].old[k];
-            }
-        }
-    }
-
-    if( check_clear() ){
-        draw_request = true;
-        timer_func = clear_anime;
-        counter=0;
-        timer.ed = new Date().getTime();
-    }else{
-        start_wait();
-    }
-}
-
-// 檢查是否過關
-function check_clear(){
-    var i,j;
-    var f=0;
-    for( i=1; i<ymax; i++ ){
-        for( j=0; j<xmax; j++ ){
-            if( cel[i][j].col[3] != cel[i-1][j].col[1] ) f=1;
-        }
-    }
-    if( f>0 ) return false;
-    for( i=0; i<ymax; i++ ){
-        for( j=1; j<xmax; j++ ){
-            if( cel[i][j].col[2] != cel[i][j-1].col[0] ) f=1;
-        }
-    }
-    if( f>0 ) return false;
+    se_button.play();
     return true;
 }
 
-// 過關動畫
-function clear_anime(){
-    if( counter == 0 ){
-        se_clear.play();
-    }
-
-    linewidth -= 0.5;
-    if( linewidth<0 ) face.pat=1;
-    draw_request = true;
-
-    counter++;
-    if( counter<16 ) return;
-
-    face.pat = 1;
-    counter = 0;
-    timer_func = talk;
-
-    mes.exist = true;
-    var t = Math.floor((timer.ed-timer.st)/1000);
-    mes.txt2 = t+" 秒";
-    var lev = 0;
-    if( t<30 ) lev = 1;
-    if( t<20 ) lev = 2;
-    if( t<15 ) lev = 3;
-    if( t<10 ) lev = 4;
-    come = ["不錯喔！","很好耶！","超棒der！","太強啦！","無敵了！"];
-
-    mes.txt1 = come[lev];
-}
-
-// 表情臉說話動畫
-function talk(){
-    counter++;
-    face.pat = Math.floor(counter/3)%2;
-    if( counter>12 ){
-        face.pat = 0;
-    }
-    draw_request = true;
-    if( counter>24 ){
-        face.pat = 2;
-        init_event_func();
-        click_func = start_stage;
-    }
+// 設定棋盤格數
+function setGrid(n){
+    xmax = n;
+    ymax = n;
+    cel_w = 320 / n;
+    cel_h = 320 / n;
+    init_game();
 }
 
 // 主畫面繪製
@@ -580,7 +467,13 @@ function draw_game(){
     // 畫出切換按鈕
     for (var i = 0; i < buttons.length; i++) {
         var btn = buttons[i];
-        draw_round_rect(btn.x, btn.y, btn.w, btn.h, 8, "#ffffff");
+        // 如果當前 active，畫不同顏色
+        var isActive = (btn.grid == xmax);
+        var bgCol = isActive ? "#ffcc00" : "#ffffff";  // active 黃色
+        var textCol = isActive ? "#000000" : "#000000";
+
+        draw_round_rect(btn.x, btn.y, btn.w, btn.h, 8, bgCol);
+
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -588,10 +481,11 @@ function draw_game(){
         ctx.arcTo(btn.x + btn.w, btn.y, btn.x + btn.w, btn.y + btn.h, 8);
         ctx.arcTo(btn.x + btn.w, btn.y + btn.h, btn.x, btn.y + btn.h, 8);
         ctx.arcTo(btn.x, btn.y + btn.h, btn.x, btn.y, 8);
-        ctx.arcTo(btn.x, btn.y, btn.x + btn.w, btn.y, 8);    
+        ctx.arcTo(btn.x, btn.y, btn.x + btn.w, btn.y, 8);
         ctx.closePath();
         ctx.stroke();
-        ctx.fillStyle = "#000000";
+
+        ctx.fillStyle = textCol;
         ctx.font = "20px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -601,14 +495,14 @@ function draw_game(){
     // 畫出貓貓臉
     var x = face.x;
     var y = face.y;
-    var size = face.r * 2; // 臉的邊長
-    var r = 20; // 圓角半徑
+    var size = face.r * 2;
+    var r = 20;
 
     ctx.lineWidth = 3;
     ctx.strokeStyle = resetbutton.col;
     ctx.fillStyle = resetbutton.col;
 
-    // 畫圓角方形臉
+    // 圓角方臉
     draw_round_rect(x - size/2, y - size/2, size, size, r, resetbutton.col);
     ctx.stroke();
 
@@ -659,13 +553,13 @@ function draw_game(){
         ctx.stroke();
     }
 
-   // 畫出訊息氣泡
+    // 畫出訊息氣泡
     if (mes.exist) {
         var bubble_w = 130;
         var bubble_h = 80;
         var bubble_r = 16;
         var bubble_x = face.x - bubble_w / 2;
-        var bubble_y = face.y - face.r - bubble_h - 30; // 調整高度
+        var bubble_y = face.y - face.r - bubble_h - 30;
 
         fukidasi(bubble_x, bubble_y, bubble_w, bubble_h, bubble_r, "#ffffff");
         draw_text(bubble_x + bubble_r, bubble_y + bubble_r, mes.txt1, 20, "#000000");
@@ -710,63 +604,4 @@ function fukidasi(x, y, w, h, r, col) {
     ctx.arc(x+r, y+r, r, Math.PI*3/2, Math.PI, true);
     ctx.closePath();
     ctx.fill();
-}
-
-// 判斷是否按到網格按鈕
-function click_button(){
-    for (var i = 0; i < buttons.length; i++) {
-        var btn = buttons[i];
-        if (mouse.x >= btn.x && mouse.x <= btn.x + btn.w &&
-            mouse.y >= btn.y && mouse.y <= btn.y + btn.h) {
-            se_button.currentTime = 0;
-            se_button.play();
-            setGrid(btn.grid);
-            return true;
-        }
-    }
-    return false;
-}
-
-// 判斷是否按到重設按鈕
-function click_reset(){
-    var mx = mouse.x;
-    var my = mouse.y;
-    var x = resetbutton.x;
-    var y = resetbutton.y;
-    var r = resetbutton.r+4;
-    if( mx<x-r || mx>x+r ) return false;
-    if( my<y-r || my>y+r ) return false;
-    se_button.currentTime = 0;
-    se_button.play();
-    return true;
-}
-
-// 判斷是否按到表情臉
-function click_face(){
-    var mx = mouse.x;
-    var my = mouse.y;
-    var x = face.x;
-    var y = face.y;
-    var r = face.r+4;
-    if( mx<x-r || mx>x+r ) return false;
-    if( my<y-r || my>y+r ) return false;
-    return true;
-}
-
-function setGrid(n){
-    xmax = n;
-    ymax = n;
-    cel_w = 320 / n;
-    cel_h = 320 / n;
-    color_count = 10 + (n - 3);
-    update_colors();
-    init_game();
-}
-
-function update_colors(){
-    cols = [
-        "#0000ff","#68e2f8","#ffff00","#107708","#16fa05","#c74cfb",
-        "#ff0084","#fe91b9","#ff7800","#771339","#f54242","#42f554" 
-    ];
-    cols = cols.slice(0, color_count);
 }
