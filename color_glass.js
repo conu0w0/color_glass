@@ -43,50 +43,93 @@ var cel_h = 110;
 var xadd = [1,0,-1,0];
 var yadd = [0,1,0,-1];
 
-var canvas;
-var context;
-var scalerate = 1;
-var FPS = 30;            // 畫面更新頻率（每秒30次）
-var touchdev = false;    // 是否為觸控裝置
-var view = { w:640, h:480 }; // 畫布大小
-var mouse = { x:0, y:0, ox:0, oy:0 }; // 滑鼠座標
-var tickcount = 0;       // 計時器
+window.onload = function(){
+    var i;
+    
+    // 判斷是否為行動裝置
+    if( navigator.userAgent.indexOf('iPhone') > 0
+        || navigator.userAgent.indexOf('iPod') > 0
+        || navigator.userAgent.indexOf('iPad') > 0
+        || navigator.userAgent.indexOf('Android') > 0
+        || navigator.userAgent.indexOf('Windows Phone') > 0 ) {
+        touchdev = true;
+    }
+    scalerate = 1;
+    if( touchdev ){
+        scalerate = Math.min(window.innerWidth/view.w, window.innerHeight/view.h);
+    }
 
-// 事件用的函數
-var timer_func = new Function();
-var next_func = new Function();
-var click_func = new Function();
-var move_func = new Function();
-var release_func = new Function();
-function init_event_func(){
-    timer_func = null;
-    next_func = null;
-    click_func = null;
-    move_func = null;
-    release_func = null;
+    canvas = document.getElementById('canvas');        // 取得canvas
+    canvas.width = view.w;
+    canvas.height = view.h;
+    canvas.style.width = view.w*scalerate+'px';
+    canvas.style.height = view.h*scalerate+'px';
+    ctx = canvas.getContext('2d');
+    
+    if( touchdev ){
+        canvas.ontouchstart = touchStartListner;
+        canvas.ontouchmove = touchMoveListner;
+        canvas.ontouchend = touchEndListner;
+    }else{
+        canvas.onmousedown = mouseDownListner;
+        canvas.onmousemove = mouseMoveListner;
+        canvas.onmouseup = mouseUpListner;
+    }
+    
+    init_event_func();
+    frame_loop();
+    init_game();
 }
 
-function trace(a){ console.log(a) } 
+function frame_loop() {
+    tickcount++;
+    if( timer_func != null ) timer_func();
+    if( draw_request ) draw_game();
+    draw_request = false;
+    setTimeout( frame_loop, 1000/FPS ); // 設定更新間隔
+}
 
-// 遊戲用變數
-var draw_request = false;
-var counter = 0;
-var cols = ["#0000ff","#68e2f8","#ffff00","#107708","#16fa05","#c74cfb","#ff0084","#fe91b9","#ff7800","#771339"];
-var selected = 0;
-var linewidth = 4;
-var resetbutton = {x:50, y:50, r:20, col:"#ffffff", visible:true };    // 重設按鈕
-var face = {x:570, y:400, r:36, pat:0};    // 表情臉
-var mes = {exist:true,txt1:"",txt2:""};    // 顯示訊息
-var timer = {st:0, ed:0}; // 計時器開始與結束時間
+function mouseDownListner(e) {
+    if( click_func != null ){ adjustXY(e); click_func(); }
+}
+function mouseMoveListner(e) {
+    if( move_func != null ){ adjustXY(e); move_func(); }
+}
+function mouseUpListner(e) {
+    if( release_func != null ){ adjustXY(e); release_func(); }
+}
+function touchStartListner(e) {
+    if( click_func != null ){ touchXY(e); click_func(); }
+    e.preventDefault();
+}
+function touchMoveListner(e) {
+    if( move_func != null ){ touchXY(e); move_func(); }
+    e.preventDefault();
+}
+function touchEndListner(e) {
+    if( release_func != null ){ release_func(); }
+    e.preventDefault();
+}
 
-// 棋盤格子
-var xmax = 3;
-var ymax = 3;
-var cel = new Array();
-var cel_w = 110;
-var cel_h = 110;
-var xadd = [1,0,-1,0];
-var yadd = [0,1,0,-1];
+// 滑鼠座標處理
+function adjustXY(e) {
+    var rect = e.target.getBoundingClientRect();
+    if( scalerate>0 ){
+        mouse.x = (e.clientX-rect.left)/scalerate;
+        mouse.y = (e.clientY-rect.top)/scalerate;
+    }
+}
+
+// 觸控座標處理
+function touchXY(e) {
+    var rect = e.target.getBoundingClientRect();
+    mouse.x = e.touches[0].pageX - rect.left;
+    mouse.y = e.touches[0].pageY - rect.top;
+    if( scalerate>0 ){
+        mouse.x /= scalerate;
+        mouse.y /= scalerate;
+    }
+}
 
 // 畫布清除
 function cls() {
