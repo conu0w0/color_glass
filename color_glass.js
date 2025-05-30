@@ -626,7 +626,7 @@ function draw_game(){
     // ω 嘴
     if( face.pat == 0 ){
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(x - 4, y + 10, 4, Math.PI * 0.2, Math.PI * 0.8, false);
         ctx.stroke();
