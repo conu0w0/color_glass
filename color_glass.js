@@ -356,6 +356,19 @@ function click_reset(){
     return true;
 }
 
+// 判斷是否按到網格按鈕
+function click_button(){
+    for (var i = 0; i < buttons.length; i++) {
+        var btn = buttons[i];
+        if (mouse.x >= btn.x && mouse.x <= btn.x + btn.w &&
+            mouse.y >= btn.y && mouse.y <= btn.y + btn.h) {
+            se_button.play();
+            setGrid(btn.grid);
+            return true;
+        }
+    }
+    return false;
+}
 
 // 玩家第一次點擊
 function first_click(){
