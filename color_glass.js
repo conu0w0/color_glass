@@ -8,10 +8,10 @@ var mouse = { x:0, y:0, ox:0, oy:0 };
 var tickcount = 0;
 
 // 音效與背景音樂
-var bgm = new Audio("bgm.mp3");
-var se_click = new Audio("click.mp3");
-var se_swap = new Audio("swap.mp3");
-var se_clear = new Audio("clear.mp3");
+var bgm = new Audio("sounds/bgm.mp3");
+var se_click = new Audio("sounds/click.mp3");
+var se_swap = new Audio("sounds/swap.mp3");
+var se_clear = new Audio("sounds/clear.mp3");
 
 // 要載入的音效列表
 var sound_list = [bgm, se_click, se_swap, se_clear];
