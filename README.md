@@ -19,7 +19,13 @@
 
 這個遊戲是 國立臺東大學 綠資一 林奕宏 在 網頁程式設計 課程期末專案製作。
 
-## 音樂素材來源
+## 素材來源
+
+- 圖片
+  **網頁小圖示**
+[Icon-Icons](https://icon-icons.com/)
+
+- 音樂/音效
 
 **BGM 背景音樂**  
 [甘茶の音楽工房](https://amachamusic.chagasi.com/index.html)
