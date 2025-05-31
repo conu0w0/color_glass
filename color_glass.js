@@ -549,12 +549,12 @@ function clear_anime(){
 // 表情臉說話動畫
 function talk(){
     counter++;
-    face.pat = Math.floor(counter/6)%2;
-    if( counter>30 ){
+    face.pat = Math.floor(counter/10)%2;
+    if( counter>60 ){
         face.pat = 0;
     }
     draw_request = true;
-    if( counter>60 ){
+    if( counter>120 ){
         face.pat = 2;
         init_event_func();
         click_func = start_stage;
