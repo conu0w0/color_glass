@@ -227,10 +227,10 @@ function draw_text(x, y, str, size, col) {
 var draw_request = false;
 var counter = 0;
 var cols = [
-        "#FF6B6B","#FFD93D","#6BCB77","#4D96FF","#FF9CEE",
-        "#FFABAB","#FFDE59","#71C9CE","#FFA500","#9D4EDD",
-        "#F9F871","#00C2A8","#FD8A8A","#A8D1D1","#8EECF5",
-        "#B28DFF","#FFB84C","#7BDFF2","#C1FBA4","#FF686B"
+        "#9fa19f","#e62829","#2980ef","#fac000","#3fa129",
+        "#3fd8ff","#ff8000","#9141cb","#915121","#81b9ef",
+        "#ef4179","#91a119","#afa981","#704170","#5060e1",
+        "#50413f","#60a1b8","#ef70ef","#338da6","#44685e"
     ];
 var selected = 0;
 var linewidth = 4;
@@ -644,7 +644,7 @@ function draw_game(){
         ctx.fillText(btn.label, btn.x + btn.w / 2, btn.y + btn.h / 2);
     }
 
-    // === 畫出貓貓臉（同之前） ===
+    // 畫出貓貓臉
     var x = face.x;
     var y = face.y;
     var size = face.r * 2;
@@ -682,7 +682,7 @@ function draw_game(){
     // ω 嘴
     if( face.pat == 0 ){
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(x - 4, y + 10, 4, Math.PI * 0.1, Math.PI * 0.9, false);
         ctx.stroke();
@@ -691,14 +691,14 @@ function draw_game(){
         ctx.stroke();
     }else if( face.pat == 1 ){
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(x - 6, y + 8);
         ctx.lineTo(x + 6, y + 8);
         ctx.stroke();
     }else if( face.pat == 2 ){
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 4; 
+        ctx.lineWidth = 2; 
         ctx.beginPath();
         ctx.arc(x, y + 10, 6, 0, Math.PI, false);
         ctx.stroke();
@@ -742,10 +742,10 @@ function draw_cel(cx,cy){
 function update_colors(){
     // 固定顏色 pool
     let color_pool = [
-        "#FF6B6B","#FFD93D","#6BCB77","#4D96FF","#FF9CEE",
-        "#FFABAB","#FFDE59","#71C9CE","#FFA500","#9D4EDD",
-        "#F9F871","#00C2A8","#FD8A8A","#A8D1D1","#8EECF5",
-        "#B28DFF","#FFB84C","#7BDFF2","#C1FBA4","#FF686B"
+        "#9fa19f","#e62829","#2980ef","#fac000","#3fa129",
+        "#3fd8ff","#ff8000","#9141cb","#915121","#81b9ef",
+        "#ef4179","#91a119","#afa981","#704170","#5060e1",
+        "#50413f","#60a1b8","#ef70ef","#338da6","#44685e"
     ];
 
     // 洗牌（Fisher-Yates 洗牌法）
