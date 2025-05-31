@@ -65,17 +65,13 @@ window.onload = function(){
         || navigator.userAgent.indexOf('Windows Phone') > 0 ) {
         touchdev = true;
     }
-    scalerate = 1;
-    if( touchdev ){
-        scalerate = Math.min(window.innerWidth/view.w, window.innerHeight/view.h);
-    }
 
     canvas = document.getElementById('canvas');
     canvas.width = view.w;
     canvas.height = view.h;
-    canvas.style.width = view.w*scalerate+'px';
-    canvas.style.height = view.h*scalerate+'px';
     ctx = canvas.getContext('2d');
+
+    resize_canvas(); // 呼叫一次，設定初始大小
 
     if( touchdev ){
         canvas.ontouchstart = touchStartListner;
@@ -90,6 +86,19 @@ window.onload = function(){
     init_event_func();
     init_sound();
     frame_loop();
+}
+
+window.onresize = resize_canvas;
+
+function resize_canvas(){
+    if( touchdev ){
+        scalerate = Math.min(window.innerWidth/view.w, window.innerHeight/view.h);
+    } else {
+        scalerate = Math.min(window.innerWidth/view.w, window.innerHeight/view.h);
+    }
+
+    canvas.style.width = view.w * scalerate + 'px';
+    canvas.style.height = view.h * scalerate + 'px';
 }
 
 function start_game(){
