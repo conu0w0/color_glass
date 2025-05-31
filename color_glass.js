@@ -6,7 +6,6 @@ var touchdev = false;
 var view = { w:640, h:480 };
 var mouse = { x:0, y:0, ox:0, oy:0 };
 var tickcount = 0;
-var color_count = 10;
 
 // 音效與背景音樂
 var bgm = new Audio("sounds/bgm.mp3");
@@ -239,6 +238,7 @@ var resetbutton = {x:50, y:50, r:20, col:"#ffffff", visible:true};
 var face = {x:570, y:400, r:36, pat:0};
 var mes = {exist:true,txt1:"",txt2:""};
 var timer = {st:0, ed:0};
+var color_count = 10;
 
 // 棋盤格子
 var xmax = 3;
