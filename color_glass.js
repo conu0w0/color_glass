@@ -239,6 +239,9 @@ var face = {x:555, y:400, r:36, pat:0};
 var mes = {exist:true,txt1:"",txt2:""};
 var timer = {st:0, ed:0};
 var color_count = 10;
+var blink_counter = 0;
+var blink_timer = 0;
+var blink_interval = 180; // 大約每180 frame 眨一次眼（大約 6 秒）
 
 // 棋盤格子
 var xmax = 3;
@@ -569,9 +572,9 @@ function setGrid(n){
     if (n == 3) {
         color_count = 10;
     } else if (n == 4) {
-        color_count = 12;
+        color_count = 13;
     } else if (n == 5) {
-        color_count = 14;
+        color_count = 16;
     }
     activeButton = n;
     update_colors();
@@ -688,9 +691,35 @@ function draw_game(){
     ctx.fill();
     ctx.stroke();
 
+    // 更新眨眼計時
+    blink_timer++;
+    if (blink_timer > blink_interval) {
+        blink_counter++;
+        if (blink_counter > 6) { // 眨眼動畫結束
+            blink_counter = 0;
+            blink_timer = 0;
+            blink_interval = 120 + Math.floor(Math.random() * 180); // 下次間隔隨機 4~10 秒
+        }
+    }
+
     // 眼睛
-    draw_circle(x - 13, y - 5, 5, "#000000");
-    draw_circle(x + 13, y - 5, 5, "#000000");
+    if (blink_counter == 0) {
+        // 正常眼睛
+        draw_circle(x - 13, y - 5, 5, "#000000");
+        draw_circle(x + 13, y - 5, 5, "#000000");
+    } else {
+        // 眨眼（畫成細線）
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 18, y - 5);
+        ctx.lineTo(x - 8, y - 5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + 8, y - 5);
+        ctx.lineTo(x + 18, y - 5);
+        ctx.stroke();
+    }
 
     // ω 嘴
     if( face.pat == 0 ){
