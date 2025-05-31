@@ -757,3 +757,20 @@ function update_colors(){
     // 取前 color_count 個
     cols = color_pool.slice(0, color_count);
 }
+
+function fukidasi(x, y, w, h, r, col) {
+    var ss = 10;
+    var tt = 10;
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.moveTo(x, y + r);    // 左上角起點
+    ctx.arc(x + r, y + h - r, r, Math.PI, Math.PI / 2, true);    // 左下角圓弧
+    ctx.lineTo(x + w * 2 / 4 - ss, y + h);    // 底邊左側
+    ctx.lineTo(x + w * 2 / 4, y + h + tt);    // 氣泡尖端
+    ctx.lineTo(x + w * 2 / 4 + ss, y + h);    // 底邊右側
+    ctx.arc(x + w - r, y + h - r, r, Math.PI / 2, 0, true);    // 右下角圓弧
+    ctx.arc(x + w - r, y + r, r, 0, Math.PI * 3 / 2, true);    // 右上角圓弧
+    ctx.arc(x + r, y + r, r, Math.PI * 3 / 2, Math.PI, true);    // 左上角圓弧
+    ctx.closePath();
+    ctx.fill();
+}
