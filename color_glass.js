@@ -91,15 +91,25 @@ window.onload = function(){
 window.onresize = resize_canvas;
 
 function resize_canvas(){
-    if( touchdev ){
-        scalerate = Math.min(window.innerWidth/view.w, window.innerHeight/view.h);
-    } else {
-        scalerate = Math.min(window.innerWidth/view.w, window.innerHeight/view.h);
-    }
+    var marginDesktop = 100;
+    var marginMobile = 40; 
 
+    var isMobile = touchdev || window.innerWidth < 768;
+
+    var margin = isMobile ? marginMobile : marginDesktop;
+
+    var availableWidth = window.innerWidth - margin * 2;
+    var availableHeight = window.innerHeight - margin * 2;
+
+    scalerate = Math.min(availableWidth / view.w, availableHeight / view.h);
+
+    canvas.style.position = 'absolute';
+    canvas.style.left = ((window.innerWidth - view.w * scalerate) / 2) + 'px';
+    canvas.style.top = ((window.innerHeight - view.h * scalerate) / 2) + 'px';
     canvas.style.width = view.w * scalerate + 'px';
     canvas.style.height = view.h * scalerate + 'px';
 }
+
 
 function start_game(){
     console.log("開始遊戲！");
