@@ -277,6 +277,8 @@ function init_game() {
 
 // 開始新關卡
 function start_stage(){
+    update_colors();
+    
     var i,j,k;
     for( i=0; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
@@ -369,6 +371,9 @@ function click_button(){
         var btn = buttons[i];
         if (mouse.x >= btn.x && mouse.x <= btn.x + btn.w &&
             mouse.y >= btn.y && mouse.y <= btn.y + btn.h) {
+            if (btn.grid == activeButton) {
+                return false;
+            }
             se_button.play();
             setGrid(btn.grid);
             return true;
@@ -559,7 +564,14 @@ function setGrid(n){
     ymax = n;
     cel_w = 320 / n;
     cel_h = 320 / n;
-    color_count = 10 + (n - 2);
+    // 依照不同 grid 設定對應顏色數
+    if (n == 3) {
+        color_count = 10;
+    } else if (n == 4) {
+        color_count = 12;
+    } else if (n == 5) {
+        color_count = 14;
+    }
     activeButton = n;
     update_colors();
     init_game();
