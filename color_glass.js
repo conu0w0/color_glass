@@ -257,6 +257,7 @@ var buttons = [
     {x: 30, y: 100, w: 80, h: 40, label: "3x3", grid: 3, active: true},
     {x: 30, y: 150, w: 80, h: 40, label: "4x4", grid: 4, active: false},
     {x: 30, y: 200, w: 80, h: 40, label: "5x5", grid: 5, active: false},
+    {x: 30, y: 250, w: 80, h: 40, label: "6x6", grid: 6, active: false},
 ];
 
 // 遊戲初始化
@@ -534,15 +535,52 @@ function clear_anime(){
     timer_func = talk;
 
     mes.exist = true;
-    var t = Math.floor((timer.ed-timer.st)/1000);
-    mes.txt2 = t+" 秒";
-    var lev = 0;
-    if( t<30 ) lev = 1;
-    if( t<20 ) lev = 2;
-    if( t<15 ) lev = 3;
-    if( t<10 ) lev = 4;
-    come = ["不錯喔！","很好耶！","超棒der！","太強啦！","無敵了！"];
+    var t = Math.floor((timer.ed - timer.st) / 1000);
+    mes.txt2 = t + " 秒";
 
+    var lev = 0;
+    var limit1 = 0;
+    var limit2 = 0;
+    var limit3 = 0;
+    var limit4 = 0;
+
+    // 根據 activeButton 設定評分標準
+    if( activeButton == 3 ){
+        limit1 = 60;
+        limit2 = 40;
+        limit3 = 30;
+        limit4 = 20;
+    } else if( activeButton == 4 ){
+        limit1 = 360;
+        limit2 = 180;
+        limit3 = 120;
+        limit4 = 90;
+    } else if( activeButton == 5 ){
+        limit1 = 720;
+        limit2 = 480;
+        limit3 = 360;
+        limit4 = 240;
+    } else if( activeButton == 6 ){
+        limit1 = 1440;
+        limit2 = 840;
+        limit3 = 500;
+        limit4 = 360;
+    }
+
+    // 用 else if 來避免重複覆蓋
+    if( t < limit4 ){
+        lev = 4;
+    } else if( t < limit3 ){
+        lev = 3;
+    } else if( t < limit2 ){
+        lev = 2;
+    } else if( t < limit1 ){
+        lev = 1;
+    } else {
+        lev = 0;
+    }
+
+    come = ["不錯喔！", "很好耶！", "超棒der！", "太強啦！", "無敵了！"];
     mes.txt1 = come[lev];
 }
 
@@ -575,6 +613,8 @@ function setGrid(n){
         color_count = 13;
     } else if (n == 5) {
         color_count = 16;
+    } else if (n == 6) {
+        color_count = 19;
     }
     activeButton = n;
     update_colors();
