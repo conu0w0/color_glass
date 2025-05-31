@@ -6,6 +6,7 @@ var touchdev = false;
 var view = { w:640, h:480 };
 var mouse = { x:0, y:0, ox:0, oy:0 };
 var tickcount = 0;
+var color_count = 10;
 
 // 音效與背景音樂
 var bgm = new Audio("sounds/bgm.mp3");
