@@ -281,6 +281,10 @@ var buttons = [
     {x: 30, y: 250, w: 80, h: 40, label: "6x6", grid: 6, active: false},
 ];
 
+var rulebutton = { x: 30, y: view.h - 60, w: 100, h: 40, label: "i", visible: true };
+var show_rules = false;
+
+
 // 遊戲初始化
 function init_game() {
     var i,j;
@@ -418,14 +422,17 @@ function first_click(){
     if (click_button()) {
         return;
     }
+    if (click_rulebutton()) {
+        return;
+    }
     var n = get_cn();
     if( n<0 ) return;
 
     se_click.play();
 
     selected = n;
-    for( i=0; i<ymax; i++ ){
-        for( j=0; j<xmax; j++ ){
+    for( var i=0; i<ymax; i++ ){
+        for( var j=0; j<xmax; j++ ){
             cel[i][j].prio = ( i*xmax+j==n );
         }
     }
@@ -446,6 +453,9 @@ function draw_selected(){
 function second_click(){
     if( click_reset() ){
         start_stage();
+        return;
+    }
+    if ( click_rulebutton() ) {
         return;
     }
     var n = get_cn();
@@ -474,6 +484,20 @@ function second_click(){
     counter=0;
     init_event_func();
     timer_func = move_cel;
+}
+
+// 點擊規則按鈕
+function click_rulebutton(){
+    var mx = mouse.x;
+    var my = mouse.y;
+    if (mx >= rulebutton.x && mx <= rulebutton.x + rulebutton.w &&
+        my >= rulebutton.y && my <= rulebutton.y + rulebutton.h) {
+        se_button.play();
+        show_rules = !show_rules; // 點擊切換顯示/隱藏
+        draw_request = true;
+        return true;
+    }
+    return false;
 }
 
 // 執行交換動畫
@@ -818,6 +842,68 @@ function draw_game(){
         fukidasi(bubble_x, bubble_y, bubble_w, bubble_h, bubble_r, "#ffffff");
         draw_text(bubble_x + bubble_r, bubble_y + bubble_r, mes.txt1, 20, "#000000");
         draw_text(bubble_x + bubble_r, bubble_y + bubble_r + 32, mes.txt2, 20, "#000000");
+    }
+
+        // 畫出規則按鈕
+    if (rulebutton.visible) {
+        draw_round_rect(rulebutton.x, rulebutton.y, rulebutton.w, rulebutton.h, 8, "#ffffff");
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(rulebutton.x + 8, rulebutton.y);
+        ctx.arcTo(rulebutton.x + rulebutton.w, rulebutton.y, rulebutton.x + rulebutton.w, rulebutton.y + rulebutton.h, 8);
+        ctx.arcTo(rulebutton.x + rulebutton.w, rulebutton.y + rulebutton.h, rulebutton.x, rulebutton.y + rulebutton.h, 8);
+        ctx.arcTo(rulebutton.x, rulebutton.y + rulebutton.h, rulebutton.x, rulebutton.y, 8);
+        ctx.arcTo(rulebutton.x, rulebutton.y, rulebutton.x + rulebutton.w, rulebutton.y, 8);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.fillStyle = "#000000";
+        ctx.font = "20px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(rulebutton.label, rulebutton.x + rulebutton.w / 2, rulebutton.y + rulebutton.h / 2);
+    }
+
+    // 如果要顯示規則
+    if (show_rules) {
+        var rules_x = 150;
+        var rules_y = 100;
+        var rules_w = 340;
+        var rules_h = 280;
+        var rules_r = 16;
+
+        // 畫出規則框
+        draw_round_rect(rules_x, rules_y, rules_w, rules_h, rules_r, "#ffffff");
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(rules_x + rules_r, rules_y);
+        ctx.arcTo(rules_x + rules_w, rules_y, rules_x + rules_w, rules_y + rules_h, rules_r);
+        ctx.arcTo(rules_x + rules_w, rules_y + rules_h, rules_x, rules_y + rules_h, rules_r);
+        ctx.arcTo(rules_x, rules_y + rules_h, rules_x, rules_y, rules_r);
+        ctx.arcTo(rules_x, rules_y, rules_x + rules_w, rules_y, rules_r);
+        ctx.closePath();
+        ctx.stroke();
+
+        // 寫規則文字
+        ctx.fillStyle = "#000000";
+        ctx.font = "18px sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        var lines = [
+            "遊戲規則：",
+            "1. 點擊一格選擇。",
+            "2. 再點擊另一格交換。",
+            "3. 目標是讓相鄰邊顏色相同。",
+            "4. 成功配對完成即過關！",
+            "",
+            "點擊「 i 」按鈕可以關閉本說明。"
+        ];
+        var lineHeight = 30;
+        for (var i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], rules_x + 20, rules_y + 20 + i * lineHeight);
+        }
     }
 }
 
