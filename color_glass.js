@@ -91,25 +91,27 @@ window.onload = function(){
 window.onresize = resize_canvas;
 
 function resize_canvas(){
-    var marginDesktop = 100;
-    var marginMobile = 40; 
+    // 改進的裝置判斷，支援更多觸控裝置
+    touchdev = ('ontouchstart' in window) || window.matchMedia("(pointer: coarse)").matches;
 
-    var isMobile = touchdev || window.innerWidth < 768;
+    // 用百分比 margin，避免固定 margin 在不同手機比例出問題
+    var marginRatio = touchdev ? 0.1 : 0.2; // 手機邊 10%，桌機邊 20%
 
-    var margin = isMobile ? marginMobile : marginDesktop;
+    var marginW = window.innerWidth * marginRatio;
+    var marginH = window.innerHeight * marginRatio;
 
-    var availableWidth = window.innerWidth - margin * 2;
-    var availableHeight = window.innerHeight - margin * 2;
+    var availableWidth = window.innerWidth - marginW * 2;
+    var availableHeight = window.innerHeight - marginH * 2;
 
     scalerate = Math.min(availableWidth / view.w, availableHeight / view.h);
 
+    // 設定 canvas 位置與大小
     canvas.style.position = 'absolute';
     canvas.style.left = ((window.innerWidth - view.w * scalerate) / 2) + 'px';
     canvas.style.top = ((window.innerHeight - view.h * scalerate) / 2) + 'px';
     canvas.style.width = view.w * scalerate + 'px';
     canvas.style.height = view.h * scalerate + 'px';
 }
-
 
 function start_game(){
     console.log("開始遊戲！");
