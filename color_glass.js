@@ -490,15 +490,18 @@ function second_click(){
 function click_rulebutton(){
     var mx = mouse.x;
     var my = mouse.y;
-    if (mx >= rulebutton.x && mx <= rulebutton.x + rulebutton.w &&
-        my >= rulebutton.y && my <= rulebutton.y + rulebutton.h) {
+    var dx = mx - rulebutton.x;
+    var dy = my - rulebutton.y;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist <= rulebutton.r + 2) {
         se_button.play();
-        show_rules = !show_rules; // 點擊切換顯示/隱藏
+        show_rules = !show_rules;
         draw_request = true;
         return true;
     }
     return false;
 }
+
 
 // 執行交換動畫
 function move_cel(){
@@ -844,25 +847,22 @@ function draw_game(){
         draw_text(bubble_x + bubble_r, bubble_y + bubble_r + 32, mes.txt2, 20, "#000000");
     }
 
-        // 畫出規則按鈕
+    // 畫出規則按鈕
     if (rulebutton.visible) {
-        draw_round_rect(rulebutton.x, rulebutton.y, rulebutton.w, rulebutton.h, 8, "#ffffff");
+        ctx.lineWidth = 3;
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 2;
+        ctx.fillStyle = "#ffffff";
         ctx.beginPath();
-        ctx.moveTo(rulebutton.x + 8, rulebutton.y);
-        ctx.arcTo(rulebutton.x + rulebutton.w, rulebutton.y, rulebutton.x + rulebutton.w, rulebutton.y + rulebutton.h, 8);
-        ctx.arcTo(rulebutton.x + rulebutton.w, rulebutton.y + rulebutton.h, rulebutton.x, rulebutton.y + rulebutton.h, 8);
-        ctx.arcTo(rulebutton.x, rulebutton.y + rulebutton.h, rulebutton.x, rulebutton.y, 8);
-        ctx.arcTo(rulebutton.x, rulebutton.y, rulebutton.x + rulebutton.w, rulebutton.y, 8);
-        ctx.closePath();
+        ctx.arc(rulebutton.x, rulebutton.y, rulebutton.r, 0, Math.PI * 2);
+        ctx.fill();
         ctx.stroke();
 
+        // 畫 "i" 文字
         ctx.fillStyle = "#000000";
         ctx.font = "20px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(rulebutton.label, rulebutton.x + rulebutton.w / 2, rulebutton.y + rulebutton.h / 2);
+        ctx.fillText(rulebutton.label, rulebutton.x, rulebutton.y);
     }
 
     // 如果要顯示規則
@@ -889,10 +889,11 @@ function draw_game(){
         // 寫規則文字
         ctx.fillStyle = "#000000";
         ctx.font = "18px sans-serif";
-        ctx.textAlign = "left";
+        ctx.textAlign = "center";
         ctx.textBaseline = "top";
         var lines = [
-            "遊戲規則：",
+            "遊戲規則",
+            "",
             "1. 點擊一格選擇。",
             "2. 再點擊另一格交換。",
             "3. 目標是讓相鄰邊顏色相同。",
@@ -901,8 +902,9 @@ function draw_game(){
             "點擊「 i 」按鈕可以關閉本說明。"
         ];
         var lineHeight = 30;
+        var text_x = rules_x + rules_w / 2; // 規則框正中間
         for (var i = 0; i < lines.length; i++) {
-            ctx.fillText(lines[i], rules_x + 20, rules_y + 20 + i * lineHeight);
+            ctx.fillText(lines[i], text_x, rules_y + 20 + i * lineHeight);
         }
     }
 }
