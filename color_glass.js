@@ -20,14 +20,6 @@ var sound_loaded = 0;
 var sound_total = sound_list.length;
 var loading_done = false;
 
-// 功能按鈕區 (左下角)
-var funcButtons = [
-    { x: 30, y: view.h - 100, w: 120, h: 40, label: "規則說明", action: "rule" },
-    { x: 160, y: view.h - 100, w: 120, h: 40, label: "Language", action: "lang" }
-];
-
-var currentLanguage = "zh"; // 預設語言是中文
-
 // 音效初始化
 function init_sound(){
     bgm.loop = true;
@@ -200,10 +192,6 @@ function cls() {
     ctx.fillRect(0,0,view.w,view.h);
 }
 
-// 遊戲用變數
-var draw_request = false;
-var counter = 0;
-
 // 基本畫圖函數
 function triangle(x1,y1,x2,y2,x3,y3,col,alpha) {
     ctx.globalAlpha = alpha;
@@ -257,12 +245,14 @@ function draw_text(x, y, str, size, col) {
 }
 
 // 遊戲用變數
+var draw_request = false;
+var counter = 0;
 var cols = [
-    "#9fa19f","#e62829","#2980ef","#fac000","#3fa129",
-    "#3fd8ff","#ff8000","#9141cb","#915121","#81b9ef",
-    "#ef4179","#91a119","#afa981","#704170","#5060e1",
-    "#50413f","#60a1b8","#ef70ef","#ffffff","#44685e"
-];
+        "#9fa19f","#e62829","#2980ef","#fac000","#3fa129",
+        "#3fd8ff","#ff8000","#9141cb","#915121","#81b9ef",
+        "#ef4179","#91a119","#afa981","#704170","#5060e1",
+        "#50413f","#60a1b8","#ef70ef","#ffffff","#44685e"
+    ];
 var selected = 0;
 var linewidth = 4;
 var resetbutton = {x:50, y:50, r:20, col:"#ffffff", visible:true};
@@ -288,7 +278,7 @@ var buttons = [
     {x: 30, y: 100, w: 80, h: 40, label: "3x3", grid: 3, active: true},
     {x: 30, y: 150, w: 80, h: 40, label: "4x4", grid: 4, active: false},
     {x: 30, y: 200, w: 80, h: 40, label: "5x5", grid: 5, active: false},
-    {x: 30, y: 250, w: 80, h: 40, label: "6x6", grid: 6, active: false}
+    {x: 30, y: 250, w: 80, h: 40, label: "6x6", grid: 6, active: false},
 ];
 
 // 遊戲初始化
@@ -418,24 +408,6 @@ function click_button(){
     return false;
 }
 
-// 判斷是否按到功能按鈕（規則、語言）
-function click_funcButton(){
-    for (var i = 0; i < funcButtons.length; i++) {
-        var btn = funcButtons[i];
-        if (mouse.x >= btn.x && mouse.x <= btn.x + btn.w &&
-            mouse.y >= btn.y && mouse.y <= btn.y + btn.h) {
-            se_button.play();
-            if (btn.action === "rule") {
-                showRule();
-            } else if (btn.action === "lang") {
-                toggleLanguage();
-            }
-            return true;
-        }
-    }
-    return false;
-}
-
 // 玩家第一次點擊
 function first_click(){
     bgm.play();
@@ -444,9 +416,6 @@ function first_click(){
         return;
     }
     if (click_button()) {
-        return;
-    }
-    if (click_funcButton()) {
         return;
     }
     var n = get_cn();
@@ -477,9 +446,6 @@ function draw_selected(){
 function second_click(){
     if( click_reset() ){
         start_stage();
-        return;
-    }
-    if (click_funcButton()) {
         return;
     }
     var n = get_cn();
@@ -572,6 +538,110 @@ function check_clear(){
     return true;
 }
 
+// 過關動畫
+function clear_anime(){
+    if( counter == 0 ){
+        se_clear.play();
+    }
+
+    linewidth -= 0.5;
+    if( linewidth<0 ) face.pat=1;
+    draw_request = true;
+
+    counter++;
+    if( counter<16 ) return;
+
+    face.pat = 1;
+    counter = 0;
+    timer_func = talk;
+
+    mes.exist = true;
+    var t = Math.floor((timer.ed - timer.st) / 1000);
+    mes.txt2 = t + " 秒";
+
+    var lev = 0;
+    var limit1 = 0;
+    var limit2 = 0;
+    var limit3 = 0;
+    var limit4 = 0;
+
+    // 根據 activeButton 設定評分標準
+    if( activeButton == 3 ){
+        limit1 = 60;
+        limit2 = 40;
+        limit3 = 30;
+        limit4 = 20;
+    } else if( activeButton == 4 ){
+        limit1 = 360;
+        limit2 = 180;
+        limit3 = 120;
+        limit4 = 90;
+    } else if( activeButton == 5 ){
+        limit1 = 720;
+        limit2 = 480;
+        limit3 = 360;
+        limit4 = 240;
+    } else if( activeButton == 6 ){
+        limit1 = 1440;
+        limit2 = 840;
+        limit3 = 500;
+        limit4 = 360;
+    }
+
+    // 用 else if 來避免重複覆蓋
+    if( t < limit4 ){
+        lev = 4;
+    } else if( t < limit3 ){
+        lev = 3;
+    } else if( t < limit2 ){
+        lev = 2;
+    } else if( t < limit1 ){
+        lev = 1;
+    } else {
+        lev = 0;
+    }
+
+    come = ["不錯喔！", "很好耶！", "超棒der！", "太強啦！", "無敵了！"];
+    mes.txt1 = come[lev];
+}
+
+// 表情臉說話動畫
+function talk(){
+    counter++;
+    face.pat = Math.floor(counter/10)%2;
+    if( counter>60 ){
+        face.pat = 0;
+    }
+    draw_request = true;
+    if( counter>120 ){
+        face.pat = 2;
+        init_event_func();
+        click_func = start_stage;
+    }
+}
+
+var activeButton = 3;  // 一開始預設是 3x3
+
+function setGrid(n){
+    xmax = n;
+    ymax = n;
+    cel_w = 320 / n;
+    cel_h = 320 / n;
+    // 依照不同 grid 設定對應顏色數
+    if (n == 3) {
+        color_count = 10;
+    } else if (n == 4) {
+        color_count = 13;
+    } else if (n == 5) {
+        color_count = 16;
+    } else if (n == 6) {
+        color_count = 19;
+    }
+    activeButton = n;
+    update_colors();
+    init_game();
+}
+
 // 主畫面繪製
 function draw_game(){
     var i,j;
@@ -651,26 +721,103 @@ function draw_game(){
         ctx.fillText(btn.label, btn.x + btn.w / 2, btn.y + btn.h / 2);
     }
 
-    // 畫功能按鈕
-    for (var i = 0; i < funcButtons.length; i++) {
-        var btn = funcButtons[i];
-        draw_round_rect(btn.x, btn.y, btn.w, btn.h, 8, "#ffffff");
+    // 畫出貓貓臉
+    var x = face.x;
+    var y = face.y;
+    var size = face.r * 2;
+    var r = 20;
+
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = resetbutton.col;
+    ctx.fillStyle = resetbutton.col;
+
+    draw_round_rect(x - size/2, y - size/2, size, size, r, resetbutton.col);
+    ctx.stroke();
+
+    // 左耳
+    ctx.beginPath();
+    ctx.moveTo(x - size/2 + 5, y - size/2 + 15);
+    ctx.lineTo(x - size/2 + 25, y - size/2 - 15);
+    ctx.lineTo(x - size/2 + 45, y - size/2 + 15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 右耳
+    ctx.beginPath();
+    ctx.moveTo(x + size/2 - 5, y - size/2 + 15);
+    ctx.lineTo(x + size/2 - 25, y - size/2 - 15);
+    ctx.lineTo(x + size/2 - 45, y - size/2 + 15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 更新眨眼計時
+    blink_timer++;
+    if (blink_timer > blink_interval) {
+        blink_counter++;
+        if (blink_counter > 6) { // 眨眼動畫結束
+            blink_counter = 0;
+            blink_timer = 0;
+            blink_interval = 120 + Math.floor(Math.random() * 180); // 下次間隔隨機 4~10 秒
+        }
+    }
+
+    // 眼睛
+    if (blink_counter == 0) {
+        // 正常眼睛
+        draw_circle(x - 13, y - 5, 5, "#000000");
+        draw_circle(x + 13, y - 5, 5, "#000000");
+    } else {
+        // 眨眼（畫成細線）
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(btn.x + 8, btn.y);
-        ctx.arcTo(btn.x + btn.w, btn.y, btn.x + btn.w, btn.y + btn.h, 8);
-        ctx.arcTo(btn.x + btn.w, btn.y + btn.h, btn.x, btn.y + btn.h, 8);
-        ctx.arcTo(btn.x, btn.y + btn.h, btn.x, btn.y, 8);
-        ctx.arcTo(btn.x, btn.y, btn.x + btn.w, btn.y, 8);
-        ctx.closePath();
+        ctx.moveTo(x - 18, y - 5);
+        ctx.lineTo(x - 8, y - 5);
         ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + 8, y - 5);
+        ctx.lineTo(x + 18, y - 5);
+        ctx.stroke();
+    }
 
-        ctx.fillStyle = "#000000";
-        ctx.font = "16px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(btn.label, btn.x + btn.w / 2, btn.y + btn.h / 2);
+    // ω 嘴
+    if( face.pat == 0 ){
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x - 4, y + 10, 4, Math.PI * 0.1, Math.PI * 0.9, false);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x + 4, y + 10, 4, Math.PI * 0.1, Math.PI * 0.9, false);
+        ctx.stroke();
+    }else if( face.pat == 1 ){
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 6, y + 8);
+        ctx.lineTo(x + 6, y + 8);
+        ctx.stroke();
+    }else if( face.pat == 2 ){
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2; 
+        ctx.beginPath();
+        ctx.arc(x, y + 10, 6, 0, Math.PI, false);
+        ctx.stroke();
+    }
+
+    // 畫出訊息氣泡
+    if (mes.exist) {
+        var bubble_w = 130;
+        var bubble_h = 80;
+        var bubble_r = 16;
+        var bubble_x = face.x - bubble_w / 2;
+        var bubble_y = face.y - face.r - bubble_h - 30;
+
+        fukidasi(bubble_x, bubble_y, bubble_w, bubble_h, bubble_r, "#ffffff");
+        draw_text(bubble_x + bubble_r, bubble_y + bubble_r, mes.txt1, 20, "#000000");
+        draw_text(bubble_x + bubble_r, bubble_y + bubble_r + 32, mes.txt2, 20, "#000000");
     }
 }
 
@@ -729,35 +876,4 @@ function fukidasi(x, y, w, h, r, col) {
     ctx.arc(x + r, y + r, r, Math.PI * 3 / 2, Math.PI, true);    // 左上角圓弧
     ctx.closePath();
     ctx.fill();
-}
-
-// 額外新增的功能：規則說明、語言切換
-function showRule(){
-    var message = currentLanguage === "zh" ?
-        "遊戲規則：\n點擊兩個相鄰的玻璃交換位置，\n讓相鄰邊的顏色一致。" :
-        "Rule:\nClick two adjacent glasses to swap positions,\nmake adjacent sides match the color.";
-    alert(message);
-}
-
-function toggleLanguage(){
-    currentLanguage = (currentLanguage === "zh") ? "en" : "zh";
-    updateButtonLabels();
-}
-
-function updateButtonLabels(){
-    // 更新功能按鈕文字
-    for (var i = 0; i < funcButtons.length; i++) {
-        if (funcButtons[i].action === "rule") {
-            funcButtons[i].label = (currentLanguage === "zh") ? "規則說明" : "Rule";
-        } else if (funcButtons[i].action === "lang") {
-            funcButtons[i].label = (currentLanguage === "zh") ? "Language" : "語言";
-        }
-    }
-
-    // 更新結束語陣列 come
-    come = (currentLanguage === "zh") ?
-        ["不錯喔！", "很好耶！", "超棒der！", "太強啦！", "無敵了！"] :
-        ["Good job!", "Great!", "Awesome!", "Fantastic!", "Unstoppable!"];
-
-    draw_request = true; // 強制重繪
 }
