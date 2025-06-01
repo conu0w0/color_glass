@@ -2,19 +2,21 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>彩色玻璃遊戲</title>
     <link rel="icon" href="favicon.ico">
     <style>
-        body {
-            background-color: #222;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        html, body {
             margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #222;
+            width: 100%;
+            height: 100%;
         }
         canvas {
+            display: block;
+            margin: auto;
             background-color: #000;
             border: 5px solid #fff;
         }
