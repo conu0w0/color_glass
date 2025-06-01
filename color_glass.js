@@ -281,9 +281,8 @@ var buttons = [
     {x: 30, y: 250, w: 80, h: 40, label: "6x6", grid: 6, active: false},
 ];
 
-var rulebutton = { x: 30, y: view.h - 60, w: 100, h: 40, label: "i", visible: true };
+var rulebutton = { x: 50, y: view.h - 50, r: 20, label: "i", visible: true };
 var show_rules = false;
-
 
 // 遊戲初始化
 function init_game() {
