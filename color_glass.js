@@ -709,7 +709,24 @@ function draw_game(){
     } else {
         elapsedSeconds = 0;
     }
-    draw_text(view.w - 160, 40, "Time: " + elapsedSeconds + " 秒", 20, "#ffffff");
+    // 計算秒數
+    var elapsedSeconds;
+    if (mes.exist) {
+        elapsedSeconds = Math.floor((timer.ed - timer.st) / 1000);
+    } else if (timer.st > 0) { 
+        elapsedSeconds = Math.floor((new Date().getTime() - timer.st) / 1000);
+    } else {
+        elapsedSeconds = 0;
+    }
+
+    var timerX = face.x; 
+    var timerY = 40; 
+
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.font = "24px sans-serif";
+    ctx.fillText(elapsedSeconds, timerX, timerY);
 
     ctx.lineWidth = linewidth;
     ctx.beginPath();
