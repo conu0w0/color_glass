@@ -5,7 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>彩色玻璃遊戲</title>
     <link rel="icon" href="favicon.ico">
+
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #333;
+            overflow: hidden; /* 避免捲動條出現 */
+        }
+
+        #name-input-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: #333;
+        }
+
+        #name-input-box {
+            background-color: #fff;
+            padding: 30px 40px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #name-input-box h1 {
+            margin-top: 0;
+        }
+
+        #player-name-input {
+            padding: 10px;
+            font-size: 16px;
+            width: 200px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        #start-game-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #2980ef;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #start-game-button:hover {
+            background-color: #025ca6;
+        }
+
         html, body {
             margin: 0;
             padding: 0;
@@ -14,6 +72,7 @@
             width: 100%;
             height: 100%;
         }
+
         canvas {
             display: block;
             margin: auto;
@@ -23,9 +82,16 @@
     </style>
 </head>
 <body>
+    <div id="name-input-overlay">
+        <div id="name-input-box">
+            <h1>色彩拼圖</h1>
+            <p>請輸入您的暱稱：</p>
+            <input type="text" id="player-name-input" maxlength="10" placeholder="玩家">
+            <button id="start-game-button">開始遊戲</button>
+        </div>
+    </div>
 
     <canvas id="canvas"></canvas>
     <script src="color_glass.js"></script>
-
 </body>
 </html>
