@@ -1,3 +1,16 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyDCWgx-B8MudQEWlZgm_WE2OXTxBDQf4Cs",
+  authDomain: "color-glass-game.firebaseapp.com",
+  projectId: "color-glass-game",
+  storageBucket: "color-glass-game.firebasestorage.app",
+  messagingSenderId: "432074253321",
+  appId: "1:432074253321:web:327d60140eff64803444d8",
+  measurementId: "G-P11VVXM6LD"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 var canvas;
 var context;
 var scalerate = 1;
@@ -525,16 +538,25 @@ function click_rulebutton(){
 
 // 載入排行榜資料 (從 localStorage)
 function load_leaderboard() {
-    var savedData = localStorage.getItem('colorPuzzleLeaderboards');
-    if (savedData) {
-        leaderboards = JSON.parse(savedData);
-    } else {
-        // 如果沒有儲存過，就初始化
-        leaderboards = {
-            "3": [], "4": [], "5": [], "6": []
-        };
-    }
+    const currentGrid = String(activeButton);
+
+    db.collection("leaderboards")
+        .where("grid", "==", currentGrid)
+        .orderBy("time")
+        .limit(5)
+        .get()
+        .then((querySnapshot) => {
+            leaderboards[currentGrid] = [];
+            querySnapshot.forEach((doc) => {
+                leaderboards[currentGrid].push(doc.data());
+            });
+            draw_request = true; // 更新畫面
+        })
+        .catch((error) => {
+            console.error("讀取錯誤：", error);
+        });
 }
+
 
 // 儲存排行榜資料 (到 localStorage)
 function save_leaderboard() {
@@ -551,6 +573,7 @@ function click_leaderboardbutton() {
     if (dist <= leaderboardbutton.r + 2) {
         se_button.play();
         show_leaderboard = !show_leaderboard;
+        if (show_leaderboard) load_leaderboard();
         draw_request = true;
         return true;
     }
