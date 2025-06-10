@@ -479,7 +479,7 @@ function draw_selected(){
     var cx = Math.floor(selected%xmax);
     var cy = Math.floor(selected/xmax);
     counter++;
-    cel[cy][cx].y = cel[cy][cx].oy - 14*Math.sin(Math.PI*counter/12);
+    cel[cy][cx].y = cel[cy][cx].oy - 14*Math.sin(Math.PI*counter/16);
     draw_request = true;
 }
 
