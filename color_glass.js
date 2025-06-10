@@ -268,6 +268,9 @@ var color_count = 10;
 var blink_counter = 0;
 var blink_timer = 0;
 var blink_interval = 180;
+var timer_alpha = 1;    
+var timer_fade_step = 0.05; 
+var timer_display = 0; 
 
 // 玩家與排行榜變數
 var playerName = "";
@@ -351,6 +354,10 @@ function start_stage(){
     mes.exist = false;
     timer.st = new Date().getTime();
     start_wait();
+    timer.st = 0;
+    timer.ed = 0;
+    timer_alpha = 1;
+    timer_display = 0;
 }
 
 // 取得目前滑鼠在哪個格子
@@ -440,12 +447,6 @@ function first_click(){
     var cx = Math.floor(n % xmax);
     var cy = Math.floor(n / xmax);
     if (!cel[cy] || !cel[cy][cx]) return;
-
-    // 確認無誤才啟動計時器
-    if (timer.st === 0) {
-        timer.st = new Date().getTime();
-    }
-
     se_click.play();
     selected = n;
     for( var i = 0; i < ymax; i++ ){
@@ -459,6 +460,9 @@ function first_click(){
 
 // 點擊選中的動畫
 function draw_selected(){
+    if (timer.st === 0) {
+        timer.st = new Date().getTime();
+    }
     var cx = Math.floor(selected%xmax);
     var cy = Math.floor(selected/xmax);
     counter++;
@@ -714,24 +718,29 @@ function draw_game(){
     } else {
         elapsedSeconds = 0;
     }
-    // 計算秒數
-    var elapsedSeconds;
-    if (mes.exist) {
-        elapsedSeconds = Math.floor((timer.ed - timer.st) / 1000);
-    } else if (timer.st > 0) { 
-        elapsedSeconds = Math.floor((new Date().getTime() - timer.st) / 1000);
+
+    // 平滑更新顯示用時間（只在時間變更時）
+    if (timer.st > 0 || mes.exist) {
+        timer_display = elapsedSeconds;
+    timer_alpha = 1;  // 一旦開始遊戲就恢復為完全不透明
     } else {
-        elapsedSeconds = 0;
+        if (timer_alpha > 0) {
+            timer_alpha -= timer_fade_step;
+            if (timer_alpha < 0) timer_alpha = 0;
+        }
     }
 
-    var timerX = face.x; 
-    var timerY = 40; 
+    // 繪製秒數（對齊貓貓中心）
+    var timerX = face.x;
+    var timerY = 40;
 
+    ctx.globalAlpha = timer_alpha;
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.font = "24px sans-serif";
-    ctx.fillText(elapsedSeconds, timerX, timerY);
+    ctx.font = "32px sans-serif";
+    ctx.fillText(Math.floor(timer_display), timerX, timerY);
+    ctx.globalAlpha = 1;  // 還原透明度
 
     ctx.lineWidth = linewidth;
     ctx.beginPath();
