@@ -432,7 +432,15 @@ function first_click(){
     }
     var n = get_cn();
     if( n<0 ) return;
-    if (timer.st === 0) { timer.st = new Date().getTime() };
+    var cx = Math.floor(n % xmax);
+    var cy = Math.floor(n / xmax);
+    if (cel[cy] && cel[cy][cx]) {
+        if (timer.st === 0) {
+            timer.st = new Date().getTime();
+        }
+    } else {
+        return;
+    }
     se_click.play();
     selected = n;
     for( var i=0; i<ymax; i++ ){
