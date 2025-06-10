@@ -525,28 +525,34 @@ function click_rulebutton(){
 
 // 載入排行榜資料 (從 Firestore )
 function load_leaderboard() {
-    const currentGrid = String(activeButton);
-
-    db.collection("leaderboards")
-        .where("grid", "==", currentGrid)
-        .orderBy("time")
-        .limit(5)
-        .get()
-        .then((querySnapshot) => {
-            const records = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.name && data.time !== undefined) {
-                    records.push({ name: data.name, time: data.time });
-                }
+    const difficultyList = ["3", "4", "5", "6"];
+    leaderboards = {}; // 重新清空，避免重複資料
+    let promises = difficultyList.map(grid => {
+        return db.collection("leaderboards")
+            .where("grid", "==", grid)
+            .orderBy("time")
+            .limit(5)
+            .get()
+            .then((querySnapshot) => {
+                const records = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.name && data.time !== undefined) {
+                        records.push({ name: data.name, time: data.time });
+                    }
+                });
+                leaderboards[grid] = records;
+                console.log(`載入 ${grid}x${grid} 成績`, records);
+            })
+            .catch((error) => {
+                console.error(`讀取 ${grid}x${grid} 排行榜錯誤：`, error);
             });
-            leaderboards[currentGrid] = records;
-            console.log("排行榜載入成功：", records);
-            draw_request = true;
-        })
-        .catch((error) => {
-            console.error("排行榜讀取錯誤：", error);
-        });
+    });
+
+    Promise.all(promises).then(() => {
+        draw_request = true;
+        console.log("所有排行榜資料載入完成");
+    });
 }
 
 // 儲存排行榜資料 (到 localStorage)
