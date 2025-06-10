@@ -1,20 +1,3 @@
-if (typeof firebase !== 'undefined') {
-  const firebaseConfig = {
-    apiKey: "AIzaSyDCWgx-B8MudQEWlZgm_WE2OXTxBDQf4Cs",
-    authDomain: "color-glass-game.firebaseapp.com",
-    projectId: "color-glass-game",
-    storageBucket: "color-glass-game.firebasestorage.app",
-    messagingSenderId: "432074253321",
-    appId: "1:432074253321:web:327d60140eff64803444d8",
-    measurementId: "G-P11VVXM6LD"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  var db = firebase.firestore();
-} else {
-  console.error("Firebase 尚未載入！");
-}
-
 var canvas;
 var context;
 var scalerate = 1;
