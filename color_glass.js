@@ -432,6 +432,7 @@ function first_click(){
     }
     var n = get_cn();
     if( n<0 ) return;
+    if (timer.st === 0) { timer.st = new Date().getTime() };
     se_click.play();
     selected = n;
     for( var i=0; i<ymax; i++ ){
@@ -695,17 +696,12 @@ function draw_game(){
     var elapsedSeconds;
     if (mes.exist) {
         elapsedSeconds = Math.floor((timer.ed - timer.st) / 1000);
-    } 
-    else if (timer.st > 0) { 
+    } else if (timer.st > 0) { 
         elapsedSeconds = Math.floor((new Date().getTime() - timer.st) / 1000);
-    } 
-    else {
+    } else {
         elapsedSeconds = 0;
     }
-    var minutes = Math.floor(elapsedSeconds / 60);
-    var seconds = elapsedSeconds % 60;
-    var formattedTime = String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
-    draw_text(view.w - 110, 20, "Time: " + formattedTime, 20, "#ffffff");
+    draw_text(view.w - 160, 40, "Time: " + elapsedSeconds + " 秒", 20, "#ffffff");
 
     ctx.lineWidth = linewidth;
     ctx.beginPath();
