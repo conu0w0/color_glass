@@ -1,97 +1,121 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>彩色玻璃遊戲</title>
-    <link rel="icon" href="favicon.ico">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>彩色玻璃遊戲</title>
+  <link rel="icon" href="favicon.ico" />
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #333;
-            overflow: hidden; /* 避免捲動條出現 */
-        }
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #333;
+      overflow: hidden;
+    }
 
-        #name-input-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            color: #333;
-        }
+    #name-input-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      color: #333;
+    }
 
-        #name-input-box {
-            background-color: #fff;
-            padding: 30px 40px;
-            border-radius: 16px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
+    #name-input-box {
+      background-color: #fff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
 
-        #name-input-box h1 {
-            margin-top: 0;
-        }
+    #name-input-box h1 {
+      margin-top: 0;
+    }
 
-        #player-name-input {
-            padding: 10px;
-            font-size: 16px;
-            width: 200px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
+    #player-name-input {
+      padding: 10px;
+      font-size: 16px;
+      width: 200px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
 
-        #start-game-button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #2980ef;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+    #start-game-button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #2980ef;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
 
-        #start-game-button:hover {
-            background-color: #025ca6;
-        }
+    #start-game-button:hover {
+      background-color: #025ca6;
+    }
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #222;
-            width: 100%;
-            height: 100%;
-        }
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #222;
+      width: 100%;
+      height: 100%;
+    }
 
-        canvas {
-            display: block;
-            margin: auto;
-            background-color: #000;
-            border: 5px solid #fff;
-        }
-    </style>
+    canvas {
+      display: block;
+      margin: auto;
+      background-color: #000;
+      border: 5px solid #fff;
+    }
+  </style>
 </head>
 <body>
-    <div id="name-input-overlay">
-        <div id="name-input-box">
-            <h1>色彩拼圖</h1>
-            <p>請輸入您的暱稱：</p>
-            <input type="text" id="player-name-input" maxlength="10" placeholder="玩家">
-            <button id="start-game-button">開始遊戲</button>
-        </div>
+  <div id="name-input-overlay">
+    <div id="name-input-box">
+      <h1>色彩拼圖</h1>
+      <p>請輸入您的暱稱：</p>
+      <input type="text" id="player-name-input" maxlength="10" placeholder="玩家">
+      <button id="start-game-button">開始遊戲</button>
     </div>
+  </div>
 
-    <canvas id="canvas"></canvas>
-    <script src="color_glass.js"></script>
+  <canvas id="canvas"></canvas>
+
+  <!-- Firebase SDK 先載入 -->
+  <script src="https://www.gstatic.com/firebasejs/11.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore-compat.js"></script>
+
+  <!-- 初始化 Firebase -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDCWgx-B8MudQEWlZgm_WE2OXTxBDQf4Cs",
+      authDomain: "color-glass-game.firebaseapp.com",
+      projectId: "color-glass-game",
+      storageBucket: "color-glass-game.firebasestorage.app",
+      messagingSenderId: "432074253321",
+      appId: "1:432074253321:web:327d60140eff64803444d8",
+      measurementId: "G-P11VVXM6LD"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // 設成全域讓 color_glass.js 可以存取
+    window.db = db;
+  </script>
+
+  <script src="color_glass.js"></script>
 </body>
 </html>
