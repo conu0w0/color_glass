@@ -128,7 +128,9 @@ function start_game(){
 function frame_loop() {
     tickcount++;
     if( timer_func != null ) timer_func();
-    if( draw_request ) draw_game();
+    if (draw_request || timer.st > 0 && timer.ed === 0) {
+        draw_game();
+    }
     draw_request = false;
     requestAnimationFrame(frame_loop);
 }
@@ -430,22 +432,25 @@ function first_click(){
     if (click_leaderboardbutton()) {
         return;
     }
+
     var n = get_cn();
-    if( n<0 ) return;
+    if( n < 0 ) return;
+
+    // 確認是否點到拼圖格子範圍內（避免邊角誤判）
     var cx = Math.floor(n % xmax);
     var cy = Math.floor(n / xmax);
-    if (cel[cy] && cel[cy][cx]) {
-        if (timer.st === 0) {
-            timer.st = new Date().getTime();
-        }
-    } else {
-        return;
+    if (!cel[cy] || !cel[cy][cx]) return;
+
+    // 確認無誤才啟動計時器
+    if (timer.st === 0) {
+        timer.st = new Date().getTime();
     }
+
     se_click.play();
     selected = n;
-    for( var i=0; i<ymax; i++ ){
-        for( var j=0; j<xmax; j++ ){
-            cel[i][j].prio = ( i*xmax+j==n );
+    for( var i = 0; i < ymax; i++ ){
+        for( var j = 0; j < xmax; j++ ){
+            cel[i][j].prio = (i * xmax + j == n);
         }
     }
     timer_func = draw_selected;
