@@ -248,11 +248,11 @@ function draw_text(x, y, str, size, col) {
 var draw_request = false;
 var counter = 0;
 var cols = [
-        "#9fa19f","#e62829","#2980ef","#fac000","#3fa129",
-        "#3fd8ff","#ff8000","#9141cb","#915121","#81b9ef",
-        "#ef4179","#91a119","#afa981","#704170","#5060e1",
-        "#50413f","#60a1b8","#ef70ef","#ffffff","#44685e"
-    ];
+    "#bbbbaa","#e62829","#2980ef","#fac000","#3fa129",
+    "#3fd8ff","#ff8000","#9141cb","#ef4179","#91a119",
+    "#afa981","#915121","#50413f","#ef70ef","#ac379e",
+    "#7766ee","#aaaabb","#6666bb","#ffffff","#025ca6"
+];
 var selected = 0;
 var linewidth = 4;
 var resetbutton = {x:50, y:50, r:20, col:"#ffffff", visible:true};
@@ -670,8 +670,8 @@ function setGrid(n){
 
 // 主畫面繪製
 function draw_game(){
-    var i,j;
 
+    var i,j;
     // 如果 loading 還沒完成，顯示 loading 畫面
     if( !loading_done ){
         cls();
@@ -680,6 +680,33 @@ function draw_game(){
     }
 
     cls();
+
+    // *** 新增計時器功能 開始 ***
+    var elapsedSeconds;
+
+    // 如果遊戲結束 (mes.exist 為 true)，顯示最終時間
+    if (mes.exist) {
+        elapsedSeconds = Math.floor((timer.ed - timer.st) / 1000);
+    } 
+    // 如果遊戲正在進行中 (timer.st > 0)，計算並顯示即時經過的時間
+    else if (timer.st > 0) { 
+        elapsedSeconds = Math.floor((new Date().getTime() - timer.st) / 1000);
+    } 
+    // 遊戲還沒開始，時間為 0
+    else {
+        elapsedSeconds = 0;
+    }
+
+    var minutes = Math.floor(elapsedSeconds / 60);
+    var seconds = elapsedSeconds % 60;
+    
+    // 將時間格式化為 "MM:SS"
+    var formattedTime = String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
+
+    // 在右上角畫出時間文字
+    draw_text(view.w - 110, 20, "Time: " + formattedTime, 20, "#ffffff");
+    // *** 新增計時器功能 結束 ***
+
 
     ctx.lineWidth = linewidth;
     ctx.beginPath();
@@ -722,191 +749,7 @@ function draw_game(){
     for (var i = 0; i < buttons.length; i++) {
         var btn = buttons[i];
         // 如果是 active 按鈕，換顏色
-        var bgColor = (btn.grid == activeButton) ? "#ffff99" : "#ffffff";
-        var borderColor = "#000000";
-        var textColor = "#000000";
-
-        // 畫圓角矩形
-        draw_round_rect(btn.x, btn.y, btn.w, btn.h, 8, bgColor);
-        ctx.strokeStyle = borderColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(btn.x + 8, btn.y);
-        ctx.arcTo(btn.x + btn.w, btn.y, btn.x + btn.w, btn.y + btn.h, 8);
-        ctx.arcTo(btn.x + btn.w, btn.y + btn.h, btn.x, btn.y + btn.h, 8);
-        ctx.arcTo(btn.x, btn.y + btn.h, btn.x, btn.y, 8);
-        ctx.arcTo(btn.x, btn.y, btn.x + btn.w, btn.y, 8);
-        ctx.closePath();
-        ctx.stroke();
-
-        // 畫文字
-        ctx.fillStyle = textColor;
-        ctx.font = "20px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(btn.label, btn.x + btn.w / 2, btn.y + btn.h / 2);
-    }
-
-    // 畫出貓貓臉
-    var x = face.x;
-    var y = face.y;
-    var size = face.r * 2;
-    var r = 20;
-
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = resetbutton.col;
-    ctx.fillStyle = resetbutton.col;
-
-    draw_round_rect(x - size/2, y - size/2, size, size, r, resetbutton.col);
-    ctx.stroke();
-
-    // 左耳
-    ctx.beginPath();
-    ctx.moveTo(x - size/2 + 5, y - size/2 + 15);
-    ctx.lineTo(x - size/2 + 25, y - size/2 - 15);
-    ctx.lineTo(x - size/2 + 45, y - size/2 + 15);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // 右耳
-    ctx.beginPath();
-    ctx.moveTo(x + size/2 - 5, y - size/2 + 15);
-    ctx.lineTo(x + size/2 - 25, y - size/2 - 15);
-    ctx.lineTo(x + size/2 - 45, y - size/2 + 15);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // 更新眨眼計時
-    blink_timer++;
-    if (blink_timer > blink_interval) {
-        blink_counter++;
-        if (blink_counter > 6) { // 眨眼動畫結束
-            blink_counter = 0;
-            blink_timer = 0;
-            blink_interval = 120 + Math.floor(Math.random() * 180); // 下次間隔隨機 4~10 秒
-        }
-    }
-
-    // 眼睛
-    if (blink_counter == 0) {
-        // 正常眼睛
-        draw_circle(x - 13, y - 5, 5, "#000000");
-        draw_circle(x + 13, y - 5, 5, "#000000");
-    } else {
-        // 眨眼（畫成細線）
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x - 18, y - 5);
-        ctx.lineTo(x - 8, y - 5);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x + 8, y - 5);
-        ctx.lineTo(x + 18, y - 5);
-        ctx.stroke();
-    }
-
-    // ω 嘴
-    if( face.pat == 0 ){
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(x - 4, y + 10, 4, Math.PI * 0.1, Math.PI * 0.9, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(x + 4, y + 10, 4, Math.PI * 0.1, Math.PI * 0.9, false);
-        ctx.stroke();
-    }else if( face.pat == 1 ){
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x - 6, y + 8);
-        ctx.lineTo(x + 6, y + 8);
-        ctx.stroke();
-    }else if( face.pat == 2 ){
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 2; 
-        ctx.beginPath();
-        ctx.arc(x, y + 10, 6, 0, Math.PI, false);
-        ctx.stroke();
-    }
-
-    // 畫出訊息氣泡
-    if (mes.exist) {
-        var bubble_w = 130;
-        var bubble_h = 80;
-        var bubble_r = 16;
-        var bubble_x = face.x - bubble_w / 2;
-        var bubble_y = face.y - face.r - bubble_h - 30;
-
-        fukidasi(bubble_x, bubble_y, bubble_w, bubble_h, bubble_r, "#ffffff");
-        draw_text(bubble_x + bubble_r, bubble_y + bubble_r, mes.txt1, 20, "#000000");
-        draw_text(bubble_x + bubble_r, bubble_y + bubble_r + 32, mes.txt2, 20, "#000000");
-    }
-
-    // 畫出規則按鈕
-    if (rulebutton.visible) {
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = "#000000";
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(rulebutton.x, rulebutton.y, rulebutton.r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // 畫 "i" 文字
-        ctx.fillStyle = "#000000";
-        ctx.font = "20px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(rulebutton.label, rulebutton.x, rulebutton.y);
-    }
-
-    // 如果要顯示規則
-    if (show_rules) {
-        var rules_x = 150;
-        var rules_y = 100;
-        var rules_w = 340;
-        var rules_h = 280;
-        var rules_r = 16;
-
-        // 畫出規則框
-        draw_round_rect(rules_x, rules_y, rules_w, rules_h, rules_r, "#ffffff");
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(rules_x + rules_r, rules_y);
-        ctx.arcTo(rules_x + rules_w, rules_y, rules_x + rules_w, rules_y + rules_h, rules_r);
-        ctx.arcTo(rules_x + rules_w, rules_y + rules_h, rules_x, rules_y + rules_h, rules_r);
-        ctx.arcTo(rules_x, rules_y + rules_h, rules_x, rules_y, rules_r);
-        ctx.arcTo(rules_x, rules_y, rules_x + rules_w, rules_y, rules_r);
-        ctx.closePath();
-        ctx.stroke();
-
-        // 寫規則文字
-        ctx.fillStyle = "#000000";
-        ctx.font = "18px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        var lines = [
-            "遊戲規則",
-            "",
-            "1. 點擊一格選擇。",
-            "2. 再點擊另一格交換。",
-            "3. 目標是讓相鄰邊顏色相同。",
-            "4. 成功配對完成即過關！",
-            "",
-            "點擊「 i 」按鈕可以關閉本說明。"
-        ];
-        var lineHeight = 30;
-        var text_x = rules_x + rules_w / 2; // 規則框正中間
-        for (var i = 0; i < lines.length; i++) {
-            ctx.fillText(lines[i], text_x, rules_y + 20 + i * lineHeight);
-        }
-    }
-}
+        var bgColor = (btn.grid ==
 
 // 畫出單一格子
 function draw_cel(cx,cy){
@@ -932,10 +775,10 @@ function draw_cel(cx,cy){
 function update_colors(){
     // 固定顏色 pool
     let color_pool = [
-        "#9fa19f","#e62829","#2980ef","#fac000","#3fa129",
-        "#3fd8ff","#ff8000","#9141cb","#915121","#81b9ef",
-        "#ef4179","#91a119","#afa981","#704170","#5060e1",
-        "#50413f","#60a1b8","#ef70ef","#ffffff","#44685e"
+        "#bbbbaa","#e62829","#2980ef","#fac000","#3fa129",
+        "#3fd8ff","#ff8000","#9141cb","#ef4179","#91a119",
+        "#afa981","#915121","#50413f","#ef70ef","#ac379e",
+        "#7766ee","#aaaabb","#6666bb","#ffffff","#025ca6"
     ];
 
     // 洗牌（Fisher-Yates 洗牌法）
