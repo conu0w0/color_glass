@@ -25,16 +25,12 @@ function init_sound(){
     bgm.loop = true;
     bgm.volume = 0.5;
     bgm.preload = "auto";
-
     se_click.volume = 0.6;
     se_click.preload = "auto";
-
     se_swap.volume = 0.6;
     se_swap.preload = "auto";
-
     se_clear.volume = 0.7;
     se_clear.preload = "auto";
-
     se_button.volume = 0.6;
     se_button.preload = "auto";
 
@@ -47,7 +43,6 @@ function init_sound(){
 function onSoundLoaded(){
     sound_loaded++;
     console.log("音效載入中：" + sound_loaded + "/" + sound_total);
-
     if( sound_loaded >= sound_total && !loading_done ){
         loading_done = true;
         console.log("所有音效載入完成！");
@@ -58,54 +53,66 @@ function onSoundLoaded(){
 window.onload = function(){
     var i;
 
-    if( navigator.userAgent.indexOf('iPhone') > 0
-        || navigator.userAgent.indexOf('iPod') > 0
-        || navigator.userAgent.indexOf('iPad') > 0
-        || navigator.userAgent.indexOf('Android') > 0
-        || navigator.userAgent.indexOf('Windows Phone') > 0 ) {
-        touchdev = true;
-    }
+    // 取得 HTML 元素
+    var nameOverlay = document.getElementById('name-input-overlay');
+    var nameInput = document.getElementById('player-name-input');
+    var startButton = document.getElementById('start-game-button');
 
     canvas = document.getElementById('canvas');
     canvas.width = view.w;
     canvas.height = view.h;
     ctx = canvas.getContext('2d');
+    
+    // 載入排行榜資料
+    load_leaderboard();
 
-    resize_canvas(); // 呼叫一次，設定初始大小
+    // 監聽開始按鈕點擊事件
+    startButton.onclick = function() {
+        playerName = nameInput.value.trim();
+        if (playerName === "") {
+            playerName = "Guest"; // 如果沒輸入，給個預設名字
+        }
+        
+        // 隱藏暱稱輸入畫面
+        nameOverlay.style.display = 'none';
 
-    if( touchdev ){
-        canvas.ontouchstart = touchStartListner;
-        canvas.ontouchmove = touchMoveListner;
-        canvas.ontouchend = touchEndListner;
-    }else{
-        canvas.onmousedown = mouseDownListner;
-        canvas.onmousemove = mouseMoveListner;
-        canvas.onmouseup = mouseUpListner;
-    }
+        // --- 以下是原本 onload 的內容 ---
+        if( navigator.userAgent.indexOf('iPhone') > 0
+            || navigator.userAgent.indexOf('iPod') > 0
+            || navigator.userAgent.indexOf('iPad') > 0
+            || navigator.userAgent.indexOf('Android') > 0
+            || navigator.userAgent.indexOf('Windows Phone') > 0 ) {
+            touchdev = true;
+        }
 
-    init_event_func();
-    init_sound();
-    frame_loop();
+        resize_canvas(); // 呼叫一次，設定初始大小
+
+        if( touchdev ){
+            canvas.ontouchstart = touchStartListner;
+            canvas.ontouchmove = touchMoveListner;
+            canvas.ontouchend = touchEndListner;
+        }else{
+            canvas.onmousedown = mouseDownListner;
+            canvas.onmousemove = mouseMoveListner;
+            canvas.onmouseup = mouseUpListner;
+        }
+
+        init_event_func();
+        init_sound(); // 音效現在才初始化
+        frame_loop();
+    };
 }
 
 window.onresize = resize_canvas;
 
 function resize_canvas(){
-    // 改進的裝置判斷，支援更多觸控裝置
     touchdev = ('ontouchstart' in window) || window.matchMedia("(pointer: coarse)").matches;
-
-    // 用百分比 margin，避免固定 margin 在不同手機比例出問題
-    var marginRatio = touchdev ? 0.05 : 0.2; // 手機邊 5%，桌機邊 20%
-
+    var marginRatio = touchdev ? 0.05 : 0.2;
     var marginW = window.innerWidth * marginRatio;
     var marginH = window.innerHeight * marginRatio;
-
     var availableWidth = window.innerWidth - marginW * 2;
     var availableHeight = window.innerHeight - marginH * 2;
-
     scalerate = Math.min(availableWidth / view.w, availableHeight / view.h);
-
-    // 設定 canvas 位置與大小
     canvas.style.position = 'absolute';
     canvas.style.left = ((window.innerWidth - view.w * scalerate) / 2) + 'px';
     canvas.style.top = ((window.innerHeight - view.h * scalerate) / 2) + 'px';
@@ -165,34 +172,30 @@ function touchEndListner(e) {
     e.preventDefault();
 }
 
-// 滑鼠座標處理
 function adjustXY(e) {
     var rect = e.target.getBoundingClientRect();
-    if( scalerate>0 ){
-        mouse.x = (e.clientX-rect.left)/scalerate;
-        mouse.y = (e.clientY-rect.top)/scalerate;
+    if( scalerate > 0 ){
+        mouse.x = (e.clientX - rect.left) / scalerate;
+        mouse.y = (e.clientY - rect.top) / scalerate;
     }
 }
 
-// 觸控座標處理
 function touchXY(e) {
     var rect = e.target.getBoundingClientRect();
     mouse.x = e.touches[0].pageX - rect.left;
     mouse.y = e.touches[0].pageY - rect.top;
-    if( scalerate>0 ){
+    if( scalerate > 0 ){
         mouse.x /= scalerate;
         mouse.y /= scalerate;
     }
 }
 
-// 畫布清除
 function cls() {
     ctx.beginPath();
     ctx.fillStyle = "#000000";
     ctx.fillRect(0,0,view.w,view.h);
 }
 
-// 基本畫圖函數
 function triangle(x1,y1,x2,y2,x3,y3,col,alpha) {
     ctx.globalAlpha = alpha;
     ctx.fillStyle = col;
@@ -210,7 +213,7 @@ function draw_rect(x,y,w,h,col) {
 }
 
 function draw_line(x1,y1,x2,y2,col){
-    ctx.strokeStyle= col;
+    ctx.strokeStyle = col;
     ctx.beginPath();
     ctx.moveTo(x1,y1);
     ctx.lineTo(x2,y2);
@@ -262,7 +265,13 @@ var timer = {st:0, ed:0};
 var color_count = 10;
 var blink_counter = 0;
 var blink_timer = 0;
-var blink_interval = 180; // 大約每180 frame 眨一次眼（大約 6 秒）
+var blink_interval = 180;
+
+// 玩家與排行榜變數
+var playerName = "";
+var leaderboards = {}; // 所有排行榜資料的容器
+var show_leaderboard = false; // 是否顯示排行榜
+var leaderboardbutton = { x: 50, y: view.h - 100, r: 20, label: "🏆", visible: true }; // 排行榜按鈕
 
 // 棋盤格子
 var xmax = 3;
@@ -280,7 +289,6 @@ var buttons = [
     {x: 30, y: 200, w: 80, h: 40, label: "5x5", grid: 5, active: false},
     {x: 30, y: 250, w: 80, h: 40, label: "6x6", grid: 6, active: false},
 ];
-
 var rulebutton = { x: 50, y: view.h - 50, r: 20, label: "i", visible: true };
 var show_rules = false;
 
@@ -307,7 +315,6 @@ function init_game() {
 // 開始新關卡
 function start_stage(){
     update_colors();
-    
     var i,j,k;
     for( i=0; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
@@ -337,13 +344,10 @@ function start_stage(){
             }
         }
     }
-
     linewidth = 4;
     face.pat = 0;
     mes.exist = false;
-
     timer.st = new Date().getTime();
-
     start_wait();
 }
 
@@ -375,7 +379,6 @@ function start_wait(){
             }
         }
     }
-
     draw_request = true;
     init_event_func();
     click_func = first_click;
@@ -424,11 +427,12 @@ function first_click(){
     if (click_rulebutton()) {
         return;
     }
+    if (click_leaderboardbutton()) {
+        return;
+    }
     var n = get_cn();
     if( n<0 ) return;
-
     se_click.play();
-
     selected = n;
     for( var i=0; i<ymax; i++ ){
         for( var j=0; j<xmax; j++ ){
@@ -457,29 +461,29 @@ function second_click(){
     if ( click_rulebutton() ) {
         return;
     }
+    if (click_leaderboardbutton()) {
+        return;
+    }
     var n = get_cn();
     if( n<0 ) return;
     if( n==selected ){
         start_wait();
         return;
     }
-
     var cx1 = Math.floor(selected%xmax);
     var cy1 = Math.floor(selected/xmax);
     var cx2 = Math.floor(n%xmax);
-    var cy2 = Math.floor(n/xmax);
+    var cy2 = Math.floor(n/ymax);
     cel[cy1][cx1].dx = cx2;
     cel[cy1][cx1].dy = cy2;
     cel[cy2][cx2].dx = cx1;
     cel[cy2][cx2].dy = cy1;
     cel[cy1][cx1].prio = true;
     cel[cy2][cx2].prio = true;
-
     cel[cy1][cx1].x = cel[cy1][cx1].ox-8;
     cel[cy2][cx2].x = cel[cy2][cx2].ox-12;
     cel[cy1][cx1].y = cel[cy1][cx1].oy-8;
     cel[cy2][cx2].y = cel[cy2][cx2].oy-12;
-
     counter=0;
     init_event_func();
     timer_func = move_cel;
@@ -501,6 +505,39 @@ function click_rulebutton(){
     return false;
 }
 
+// 載入排行榜資料 (從 localStorage)
+function load_leaderboard() {
+    var savedData = localStorage.getItem('colorPuzzleLeaderboards');
+    if (savedData) {
+        leaderboards = JSON.parse(savedData);
+    } else {
+        // 如果沒有儲存過，就初始化
+        leaderboards = {
+            "3": [], "4": [], "5": [], "6": []
+        };
+    }
+}
+
+// 儲存排行榜資料 (到 localStorage)
+function save_leaderboard() {
+    localStorage.setItem('colorPuzzleLeaderboards', JSON.stringify(leaderboards));
+}
+
+// 點擊排行榜按鈕
+function click_leaderboardbutton() {
+    var mx = mouse.x;
+    var my = mouse.y;
+    var dx = mx - leaderboardbutton.x;
+    var dy = my - leaderboardbutton.y;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist <= leaderboardbutton.r + 2) {
+        se_button.play();
+        show_leaderboard = !show_leaderboard;
+        draw_request = true;
+        return true;
+    }
+    return false;
+}
 
 // 執行交換動畫
 function move_cel(){
@@ -519,9 +556,7 @@ function move_cel(){
         draw_request = true;
         return;
     }
-
     se_swap.play();
-
     for( i=0; i<ymax; i++ ){
         for( j=0; j<xmax; j++ ){
             cel[i][j].x = cel[i][j].ox;
@@ -534,7 +569,6 @@ function move_cel(){
             }
         }
     }
-
     if( check_clear() ){
         draw_request = true;
         timer_func = clear_anime;
@@ -569,66 +603,51 @@ function clear_anime(){
     if( counter == 0 ){
         se_clear.play();
     }
-
     linewidth -= 0.5;
     if( linewidth<0 ) face.pat=1;
     draw_request = true;
-
     counter++;
     if( counter<16 ) return;
 
     face.pat = 1;
     counter = 0;
     timer_func = talk;
-
     mes.exist = true;
     var t = Math.floor((timer.ed - timer.st) / 1000);
     mes.txt2 = t + " 秒";
 
-    var lev = 0;
-    var limit1 = 0;
-    var limit2 = 0;
-    var limit3 = 0;
-    var limit4 = 0;
+    var lev = 0, limit1 = 0, limit2 = 0, limit3 = 0, limit4 = 0;
 
-    // 根據 activeButton 設定評分標準
     if( activeButton == 3 ){
-        limit1 = 60;
-        limit2 = 40;
-        limit3 = 30;
-        limit4 = 20;
+        limit1 = 60; limit2 = 40; limit3 = 30; limit4 = 20;
     } else if( activeButton == 4 ){
-        limit1 = 360;
-        limit2 = 180;
-        limit3 = 120;
-        limit4 = 90;
+        limit1 = 360; limit2 = 180; limit3 = 120; limit4 = 90;
     } else if( activeButton == 5 ){
-        limit1 = 720;
-        limit2 = 480;
-        limit3 = 360;
-        limit4 = 240;
+        limit1 = 720; limit2 = 480; limit3 = 360; limit4 = 240;
     } else if( activeButton == 6 ){
-        limit1 = 1440;
-        limit2 = 840;
-        limit3 = 500;
-        limit4 = 360;
+        limit1 = 1440; limit2 = 840; limit3 = 500; limit4 = 360;
     }
 
-    // 用 else if 來避免重複覆蓋
-    if( t < limit4 ){
-        lev = 4;
-    } else if( t < limit3 ){
-        lev = 3;
-    } else if( t < limit2 ){
-        lev = 2;
-    } else if( t < limit1 ){
-        lev = 1;
-    } else {
-        lev = 0;
-    }
+    if( t < limit4 ) lev = 4;
+    else if( t < limit3 ) lev = 3;
+    else if( t < limit2 ) lev = 2;
+    else if( t < limit1 ) lev = 1;
+    else lev = 0;
 
-    come = ["不錯喔！", "很好耶！", "超棒der！", "太強啦！", "無敵了！"];
+    var come = ["不錯喔！", "很好耶！", "超棒der！", "太強啦！", "無敵了！"];
     mes.txt1 = come[lev];
+
+    // 儲存成績到排行榜
+    var currentGrid = String(activeButton);
+    if (!leaderboards[currentGrid]) {
+        leaderboards[currentGrid] = [];
+    }
+    leaderboards[currentGrid].push({ name: playerName, time: t });
+    leaderboards[currentGrid].sort(function(a, b) {
+        return a.time - b.time;
+    });
+    leaderboards[currentGrid] = leaderboards[currentGrid].slice(0, 5);
+    save_leaderboard();
 }
 
 // 表情臉說話動畫
@@ -646,23 +665,16 @@ function talk(){
     }
 }
 
-var activeButton = 3;  // 一開始預設是 3x3
-
+var activeButton = 3;
 function setGrid(n){
     xmax = n;
     ymax = n;
     cel_w = 320 / n;
     cel_h = 320 / n;
-    // 依照不同 grid 設定對應顏色數
-    if (n == 3) {
-        color_count = 10;
-    } else if (n == 4) {
-        color_count = 13;
-    } else if (n == 5) {
-        color_count = 16;
-    } else if (n == 6) {
-        color_count = 19;
-    }
+    if (n == 3) color_count = 10;
+    else if (n == 4) color_count = 13;
+    else if (n == 5) color_count = 16;
+    else if (n == 6) color_count = 19;
     activeButton = n;
     update_colors();
     init_game();
@@ -670,9 +682,7 @@ function setGrid(n){
 
 // 主畫面繪製
 function draw_game(){
-
     var i,j;
-    // 如果 loading 還沒完成，顯示 loading 畫面
     if( !loading_done ){
         cls();
         draw_text(view.w/2 - 80, view.h/2 - 20, "Loading... " + Math.floor((sound_loaded/sound_total)*100) + "%", 28, "#ffffff");
@@ -681,37 +691,30 @@ function draw_game(){
 
     cls();
 
-    // *** 新增計時器功能 開始 ***
+    // 畫出計時器
     var elapsedSeconds;
-
-    // 如果遊戲結束 (mes.exist 為 true)，顯示最終時間
     if (mes.exist) {
         elapsedSeconds = Math.floor((timer.ed - timer.st) / 1000);
     } 
-    // 如果遊戲正在進行中 (timer.st > 0)，計算並顯示即時經過的時間
     else if (timer.st > 0) { 
         elapsedSeconds = Math.floor((new Date().getTime() - timer.st) / 1000);
     } 
-    // 遊戲還沒開始，時間為 0
     else {
         elapsedSeconds = 0;
     }
-
     var minutes = Math.floor(elapsedSeconds / 60);
     var seconds = elapsedSeconds % 60;
-    
-    // 將時間格式化為 "MM:SS"
     var formattedTime = String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
-
-    // 在右上角畫出時間文字
     draw_text(view.w - 110, 20, "Time: " + formattedTime, 20, "#ffffff");
-    // *** 新增計時器功能 結束 ***
-
 
     ctx.lineWidth = linewidth;
     ctx.beginPath();
+    var grid_w = cel_w*xmax;
+    var grid_h = cel_h*ymax;
+    var grid_ox = (view.w - grid_w)/2;
+    var grid_oy = (view.h - grid_h)/2;
     ctx.fillStyle = "#0088ff";
-    ctx.fillRect(cel[0][0].ox,cel[0][0].oy,cel_w*xmax,cel_h*ymax);
+    ctx.fillRect(grid_ox, grid_oy, grid_w, grid_h);
 
     ctx.strokeStyle = "#000000";
     for( i=0; i<ymax; i++ ){
@@ -746,19 +749,156 @@ function draw_game(){
     }
 
     // 畫出切換按鈕
-    for (var i = 0; i < buttons.length; i++) {
+    for (i = 0; i < buttons.length; i++) {
         var btn = buttons[i];
-        // 如果是 active 按鈕，換顏色
-        var bgColor = (btn.grid ==
+        var bgColor = (btn.grid == activeButton) ? "#ffff99" : "#ffffff";
+        draw_round_rect(btn.x, btn.y, btn.w, btn.h, 8, bgColor);
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.stroke(new Path2D(`M${btn.x+8},${btn.y} h${btn.w-16} a8,8,0,0,1,8,8 v${btn.h-16} a8,8,0,0,1,-8,8 h-${btn.w-16} a8,8,0,0,1,-8,-8 v-${btn.h-16} a8,8,0,0,1,8,-8 Z`));
+
+        ctx.fillStyle = "#000000";
+        ctx.font = "20px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(btn.label, btn.x + btn.w / 2, btn.y + btn.h / 2);
+    }
+
+    // 畫貓貓臉
+    var x = face.x, y = face.y, size = face.r * 2, r = 20;
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = resetbutton.col;
+    ctx.fillStyle = resetbutton.col;
+    draw_round_rect(x - size/2, y - size/2, size, size, r, resetbutton.col);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - size/2 + 5, y - size/2 + 15);
+    ctx.lineTo(x - size/2 + 25, y - size/2 - 15);
+    ctx.lineTo(x - size/2 + 45, y - size/2 + 15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + size/2 - 5, y - size/2 + 15);
+    ctx.lineTo(x + size/2 - 25, y - size/2 - 15);
+    ctx.lineTo(x + size/2 - 45, y - size/2 + 15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    blink_timer++;
+    if (blink_timer > blink_interval) {
+        blink_counter++;
+        if (blink_counter > 6) { 
+            blink_counter = 0;
+            blink_timer = 0;
+            blink_interval = 120 + Math.floor(Math.random() * 180);
+        }
+    }
+    if (blink_counter == 0) {
+        draw_circle(x - 13, y - 5, 5, "#000000");
+        draw_circle(x + 13, y - 5, 5, "#000000");
+    } else {
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 18, y - 5); ctx.lineTo(x - 8, y - 5); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + 8, y - 5); ctx.lineTo(x + 18, y - 5); ctx.stroke();
+    }
+    ctx.strokeStyle = "#000000"; ctx.lineWidth = 2;
+    if( face.pat == 0 ){
+        ctx.beginPath(); ctx.arc(x - 4, y + 10, 4, Math.PI * 0.1, Math.PI * 0.9, false); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x + 4, y + 10, 4, Math.PI * 0.1, Math.PI * 0.9, false); ctx.stroke();
+    }else if( face.pat == 1 ){
+        ctx.beginPath(); ctx.moveTo(x - 6, y + 8); ctx.lineTo(x + 6, y + 8); ctx.stroke();
+    }else if( face.pat == 2 ){
+        ctx.beginPath(); ctx.arc(x, y + 10, 6, 0, Math.PI, false); ctx.stroke();
+    }
+
+    // 畫出訊息氣泡
+    if (mes.exist) {
+        var bubble_w = 130, bubble_h = 80, bubble_r = 16;
+        var bubble_x = face.x - bubble_w / 2, bubble_y = face.y - face.r - bubble_h - 30;
+        fukidasi(bubble_x, bubble_y, bubble_w, bubble_h, bubble_r, "#ffffff");
+        draw_text(bubble_x + bubble_r, bubble_y + bubble_r, mes.txt1, 20, "#000000");
+        draw_text(bubble_x + bubble_r, bubble_y + bubble_r + 32, mes.txt2, 20, "#000000");
+    }
+
+    // 畫出規則按鈕
+    if (rulebutton.visible) {
+        ctx.lineWidth = 3; ctx.strokeStyle = "#000000"; ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(rulebutton.x, rulebutton.y, rulebutton.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#000000"; ctx.font = "20px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(rulebutton.label, rulebutton.x, rulebutton.y);
+    }
+    
+    // 畫出排行榜按鈕
+    if (leaderboardbutton.visible) {
+        ctx.lineWidth = 3; ctx.strokeStyle = "#000000"; ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(leaderboardbutton.x, leaderboardbutton.y, leaderboardbutton.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#000000"; ctx.font = "20px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(leaderboardbutton.label, leaderboardbutton.x, leaderboardbutton.y);
+    }
+
+    // 畫出排行榜
+    if (show_leaderboard) {
+        var board_x = 150, board_y = 100, board_w = 340, board_h = 280, board_r = 16;
+        var currentGrid = String(activeButton);
+        var title = "排行榜 (" + currentGrid + "x" + currentGrid + ")";
+        var records = leaderboards[currentGrid] || [];
+
+        draw_round_rect(board_x, board_y, board_w, board_h, board_r, "rgba(255, 255, 255, 0.95)");
+        ctx.strokeStyle = "#000000"; ctx.lineWidth = 3;
+        ctx.stroke(new Path2D(`M${board_x+board_r},${board_y} h${board_w-2*board_r} a${board_r},${board_r},0,0,1,${board_r},${board_r} v${board_h-2*board_r} a${board_r},${board_r},0,0,1,-${board_r},${board_r} h-${board_w-2*board_r} a${board_r},${board_r},0,0,1,-${board_r},-${board_r} v-${board_h-2*board_r} a${board_r},${board_r},0,0,1,${board_r},-${board_r} Z`));
+        
+        ctx.fillStyle = "#000000"; ctx.font = "22px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+        ctx.fillText(title, board_x + board_w / 2, board_y + 20);
+        ctx.font = "18px sans-serif";
+        var lineHeight = 35;
+        if (records.length === 0) {
+            ctx.textAlign = "center";
+            ctx.fillText("這個難度還沒有紀錄喔！", board_x + board_w / 2, board_y + 80);
+        } else {
+            for (i = 0; i < records.length; i++) {
+                var record = records[i];
+                var rank = (i + 1) + ". ";
+                var name = record.name;
+                var time = record.time + " 秒";
+                var text_y = board_y + 70 + i * lineHeight;
+                
+                ctx.textAlign = "left";
+                ctx.fillText(rank, board_x + 30, text_y);
+                ctx.fillText(name, board_x + 60, text_y);
+                ctx.textAlign = "right";
+                ctx.fillText(time, board_x + board_w - 30, text_y);
+            }
+        }
+    }
+    
+    // 畫出規則
+    if (show_rules) {
+        var rules_x = 150, rules_y = 100, rules_w = 340, rules_h = 280, rules_r = 16;
+        draw_round_rect(rules_x, rules_y, rules_w, rules_h, rules_r, "#ffffff");
+        ctx.strokeStyle = "#000000"; ctx.lineWidth = 3;
+        ctx.stroke(new Path2D(`M${rules_x+rules_r},${rules_y} h${rules_w-2*rules_r} a${rules_r},${rules_r},0,0,1,${rules_r},${rules_r} v${rules_h-2*rules_r} a${rules_r},${rules_r},0,0,1,-${rules_r},${rules_r} h-${rules_w-2*rules_r} a${rules_r},${rules_r},0,0,1,-${rules_r},-${rules_r} v-${rules_h-2*rules_r} a${rules_r},${rules_r},0,0,1,${rules_r},-${rules_r} Z`));
+
+        ctx.fillStyle = "#000000"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+        var lines = [
+            "遊戲規則", "", "1. 點擊一格選擇。", "2. 再點擊另一格交換。", "3. 目標是讓相鄰邊顏色相同。", "4. 成功配對完成即過關！", "", "點擊「 i 」按鈕可以關閉本說明。"
+        ];
+        var lineHeight = 30;
+        var text_x = rules_x + rules_w / 2;
+        for (i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], text_x, rules_y + 20 + i * lineHeight);
+        }
+    }
+}
 
 // 畫出單一格子
 function draw_cel(cx,cy){
-    var w = cel_w/2;
-    var h = cel_h/2;
-    var x = cel[cy][cx].x+w;
-    var y = cel[cy][cx].y+h;
+    var w = cel_w/2, h = cel_h/2;
+    var x = cel[cy][cx].x+w, y = cel[cy][cx].y+h;
     var a = 0.9;
-
     triangle(x,y,x+w,y-h,x+w,y+h,cols[cel[cy][cx].col[0]],a);
     triangle(x,y,x+w,y+h,x-w,y+h,cols[cel[cy][cx].col[1]],a);
     triangle(x,y,x-w,y+h,x-w,y-h,cols[cel[cy][cx].col[2]],a);
@@ -773,37 +913,31 @@ function draw_cel(cx,cy){
 }
 
 function update_colors(){
-    // 固定顏色 pool
     let color_pool = [
         "#bbbbaa","#e62829","#2980ef","#fac000","#3fa129",
         "#3fd8ff","#ff8000","#9141cb","#ef4179","#91a119",
         "#afa981","#915121","#50413f","#ef70ef","#ac379e",
         "#7766ee","#aaaabb","#6666bb","#ffffff","#025ca6"
     ];
-
-    // 洗牌（Fisher-Yates 洗牌法）
     for (let i = color_pool.length - 1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i + 1));
         [color_pool[i], color_pool[j]] = [color_pool[j], color_pool[i]];
     }
-
-    // 取前 color_count 個
     cols = color_pool.slice(0, color_count);
 }
 
 function fukidasi(x, y, w, h, r, col) {
-    var ss = 10;
-    var tt = 10;
+    var ss = 10, tt = 10;
     ctx.fillStyle = col;
     ctx.beginPath();
-    ctx.moveTo(x, y + r);    // 左上角起點
-    ctx.arc(x + r, y + h - r, r, Math.PI, Math.PI / 2, true);    // 左下角圓弧
-    ctx.lineTo(x + w * 2 / 4 - ss, y + h);    // 底邊左側
-    ctx.lineTo(x + w * 2 / 4, y + h + tt);    // 氣泡尖端
-    ctx.lineTo(x + w * 2 / 4 + ss, y + h);    // 底邊右側
-    ctx.arc(x + w - r, y + h - r, r, Math.PI / 2, 0, true);    // 右下角圓弧
-    ctx.arc(x + w - r, y + r, r, 0, Math.PI * 3 / 2, true);    // 右上角圓弧
-    ctx.arc(x + r, y + r, r, Math.PI * 3 / 2, Math.PI, true);    // 左上角圓弧
+    ctx.moveTo(x, y + r);
+    ctx.arc(x + r, y + h - r, r, Math.PI, Math.PI / 2, true);
+    ctx.lineTo(x + w * 2 / 4 - ss, y + h);
+    ctx.lineTo(x + w * 2 / 4, y + h + tt);
+    ctx.lineTo(x + w * 2 / 4 + ss, y + h);
+    ctx.arc(x + w - r, y + h - r, r, Math.PI / 2, 0, true);
+    ctx.arc(x + w - r, y + r, r, 0, Math.PI * 3 / 2, true);
+    ctx.arc(x + r, y + r, r, Math.PI * 3 / 2, Math.PI, true);
     ctx.closePath();
     ctx.fill();
 }
