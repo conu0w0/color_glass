@@ -153,6 +153,59 @@ function init_event_func(){
 function trace(a){ console.log(a) }
 
 function mouseDownListner(e) {
+    var dx = mouse.x - face.x;
+    var dy = mouse.y - face.y;
+
+    // 點擊排行榜或規則視窗右上角的「❌」
+if (show_leaderboard) {
+    var cx = 150 + 340 - 20;
+    var cy = 100 + 20;
+    if (Math.hypot(mouse.x - cx, mouse.y - cy) < 16) {
+        se_button.play();
+        show_leaderboard = false;
+        draw_request = true;
+        return;
+    }
+}
+if (show_rules) {
+    var cx = 150 + 340 - 20;
+    var cy = 100 + 20;
+    if (Math.hypot(mouse.x - cx, mouse.y - cy) < 16) {
+        se_button.play();
+        show_rules = false;
+        draw_request = true;
+        return;
+    }
+}
+
+    if (pause_menu.show) {
+    var optionHeight = 50;
+    for (var i = 0; i < pause_menu.options.length; i++) {
+        var cx = view.w / 2;
+        var cy = 120 + 40 + i * optionHeight;
+        var halfW = 140, halfH = 20;
+        if (mouse.x >= cx - halfW && mouse.x <= cx + halfW &&
+            mouse.y >= cy - halfH && mouse.y <= cy + halfH) {
+            
+            se_button.play();
+            pause_menu.show = false;
+
+            if (i === 0) start_stage(); // 重新開始
+            else if (i === 1) show_rules = true;
+            else if (i === 2) show_leaderboard = true;
+
+            draw_request = true;
+            return;
+        }
+    }
+}
+
+    if (Math.sqrt(dx * dx + dy * dy) < face.r + 10) {
+        se_button.play();
+        pause_menu.show = !pause_menu.show;
+        draw_request = true;
+        return;
+    }
     if( click_func != null ){ adjustXY(e); click_func(); }
 }
 function mouseMoveListner(e) {
@@ -268,15 +321,18 @@ var color_count = 10;
 var blink_counter = 0;
 var blink_timer = 0;
 var blink_interval = 180;
-var timer_alpha = 1;    
-var timer_fade_step = 0.05; 
-var timer_display = 0; 
 
 // 玩家與排行榜變數
 var playerName = "";
 var leaderboards = {}; // 所有排行榜資料的容器
 var show_leaderboard = false; // 是否顯示排行榜
 var leaderboardbutton = { x: 50, y: view.h - 100, r: 20, label: "🏆", visible: true }; // 排行榜按鈕
+
+// 暫停選單
+var pause_menu = { show: false, options: ["重新開始", "規則說明", "排行榜"], selected: -1 };
+var show_cat_hint = true; // 遊戲開始時顯示提示
+var hint_timer = 0;
+var hint_interval = 600; // 每 600 tick 顯示一次（約 10 秒）
 
 // 棋盤格子
 var xmax = 3;
@@ -356,8 +412,6 @@ function start_stage(){
     start_wait();
     timer.st = 0;
     timer.ed = 0;
-    timer_alpha = 1;
-    timer_display = 0;
 }
 
 // 取得目前滑鼠在哪個格子
@@ -709,6 +763,15 @@ function draw_game(){
 
     cls();
 
+    // 顯示貓咪提示
+    if (show_cat_hint || (tickcount % hint_interval === 0 && !pause_menu.show && !mes.exist)) {
+        var bubble_w = 200, bubble_h = 60, bubble_r = 16;
+        var bubble_x = face.x - bubble_w / 2, bubble_y = face.y - face.r - bubble_h - 20;
+        fukidasi(bubble_x, bubble_y, bubble_w, bubble_h, bubble_r, "#ffffff");
+        draw_text(bubble_x + bubble_r, bubble_y + bubble_r, "點我可以暫停", 20, "#000000");
+        show_cat_hint = false;
+    }
+    
     // 畫出計時器
     var elapsedSeconds;
     if (mes.exist) {
@@ -719,28 +782,14 @@ function draw_game(){
         elapsedSeconds = 0;
     }
 
-    // 平滑更新顯示用時間（只在時間變更時）
-    if (timer.st > 0 || mes.exist) {
-        timer_display = elapsedSeconds;
-    timer_alpha = 1;  // 一旦開始遊戲就恢復為完全不透明
-    } else {
-        if (timer_alpha > 0) {
-            timer_alpha -= timer_fade_step;
-            if (timer_alpha < 0) timer_alpha = 0;
-        }
-    }
-
-    // 繪製秒數（對齊貓貓中心）
     var timerX = face.x;
     var timerY = 40;
 
-    ctx.globalAlpha = timer_alpha;
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     ctx.font = "32px sans-serif";
-    ctx.fillText(Math.floor(timer_display), timerX, timerY);
-    ctx.globalAlpha = 1;  // 還原透明度
+    ctx.fillText(elapsedSeconds, timerX, timerY);
 
     ctx.lineWidth = linewidth;
     ctx.beginPath();
@@ -761,26 +810,6 @@ function draw_game(){
         for( j=0; j<xmax; j++ ){
             if( cel[i][j].prio ) draw_cel(j,i);
         }
-    }
-
-    // 畫出重設按鈕
-    if( resetbutton.visible ){
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = resetbutton.col;
-        ctx.fillStyle = resetbutton.col;
-        ctx.beginPath();
-        var x = resetbutton.x;
-        var y = resetbutton.y;
-        var r = resetbutton.r;
-        ctx.arc( x, y, r, 0, Math.PI*20/180, true );
-        ctx.stroke();
-        ctx.beginPath();
-        x += r/8;
-        ctx.moveTo(x+r-r*2/3,y-r/3);
-        ctx.lineTo(x+r,y);
-        ctx.lineTo(x+r,y-r*3/4);
-        ctx.fill();
-        ctx.stroke();
     }
 
     // 畫出切換按鈕
@@ -859,22 +888,6 @@ function draw_game(){
         draw_text(bubble_x + bubble_r, bubble_y + bubble_r + 32, mes.txt2, 20, "#000000");
     }
 
-    // 畫出規則按鈕
-    if (rulebutton.visible) {
-        ctx.lineWidth = 3; ctx.strokeStyle = "#000000"; ctx.fillStyle = "#ffffff";
-        ctx.beginPath(); ctx.arc(rulebutton.x, rulebutton.y, rulebutton.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#000000"; ctx.font = "20px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(rulebutton.label, rulebutton.x, rulebutton.y);
-    }
-    
-    // 畫出排行榜按鈕
-    if (leaderboardbutton.visible) {
-        ctx.lineWidth = 3; ctx.strokeStyle = "#000000"; ctx.fillStyle = "#ffffff";
-        ctx.beginPath(); ctx.arc(leaderboardbutton.x, leaderboardbutton.y, leaderboardbutton.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#000000"; ctx.font = "20px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(leaderboardbutton.label, leaderboardbutton.x, leaderboardbutton.y);
-    }
-
     // 畫出排行榜
     if (show_leaderboard) {
         var board_x = 150, board_y = 100, board_w = 340, board_h = 280, board_r = 16;
@@ -927,6 +940,33 @@ function draw_game(){
             ctx.fillText(lines[i], text_x, rules_y + 20 + i * lineHeight);
         }
     }
+    
+    // 畫出暫停選單
+    if (pause_menu.show) {
+    var menu_x = 180, menu_y = 120, menu_w = 280, menu_h = 180, r = 12;
+    draw_round_rect(menu_x, menu_y, menu_w, menu_h, r, "#ffffff");
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.stroke(new Path2D(`M${menu_x+r},${menu_y} h${menu_w-2*r} a${r},${r},0,0,1,${r},${r} v${menu_h-2*r} a${r},${r},0,0,1,-${r},${r} h-${menu_w-2*r} a${r},${r},0,0,1,-${r},-${r} v-${menu_h-2*r} a${r},${r},0,0,1,${r},-${r} Z`));
+    ctx.font = "20px sans-serif";
+    ctx.textAlign = "center";    
+    ctx.textBaseline = "middle";
+    var optionHeight = 50;
+    for (var i = 0; i < pause_menu.options.length; i++) {
+        var text = pause_menu.options[i];
+        var cx = view.w / 2;
+        var cy = menu_y + 40 + i * optionHeight;
+
+        // 判斷滑鼠是否移到這一項
+        if (mouse.x >= cx - 140 && mouse.x <= cx + 140 &&
+            mouse.y >= cy - 20 && mouse.y <= cy + 20) {
+            draw_round_rect(cx - 100, cy - 20, 200, 40, 8, "#ffffcc");
+        }
+
+        ctx.fillStyle = "#000000";
+        ctx.fillText(text, cx, cy);
+    }
+}
 }
 
 // 畫出單一格子
