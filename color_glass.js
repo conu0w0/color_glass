@@ -466,7 +466,7 @@ function draw_selected(){
     var cx = Math.floor(selected%xmax);
     var cy = Math.floor(selected/xmax);
     counter++;
-    cel[cy][cx].y = cel[cy][cx].oy - 14*Math.sin(Math.PI*counter/16);
+    cel[cy][cx].y = cel[cy][cx].oy - 14*Math.sin(Math.PI*counter/24);
     draw_request = true;
 }
 
@@ -523,7 +523,7 @@ function click_rulebutton(){
     return false;
 }
 
-// 載入排行榜資料 (從 localStorage)
+// 載入排行榜資料 (從 Firestore )
 function load_leaderboard() {
     const currentGrid = String(activeButton);
 
@@ -533,17 +533,21 @@ function load_leaderboard() {
         .limit(5)
         .get()
         .then((querySnapshot) => {
-            leaderboards[currentGrid] = [];
+            const records = [];
             querySnapshot.forEach((doc) => {
-                leaderboards[currentGrid].push(doc.data());
+                const data = doc.data();
+                if (data.name && data.time !== undefined) {
+                    records.push({ name: data.name, time: data.time });
+                }
             });
-            draw_request = true; // 更新畫面
+            leaderboards[currentGrid] = records;
+            console.log("排行榜載入成功：", records);
+            draw_request = true;
         })
         .catch((error) => {
-            console.error("讀取錯誤：", error);
+            console.error("排行榜讀取錯誤：", error);
         });
 }
-
 
 // 儲存排行榜資料 (到 localStorage)
 function save_leaderboard() {
@@ -628,19 +632,22 @@ function check_clear(){
 
 // 過關動畫
 function clear_anime(){
-    if( counter == 0 ){
+    if( counter === 0 ){
         se_clear.play();
     }
+
     linewidth -= 0.5;
-    if( linewidth<0 ) face.pat=1;
+    if( linewidth < 0 ) face.pat = 1;
     draw_request = true;
     counter++;
-    if( counter<16 ) return;
+
+    if( counter < 16 ) return;
 
     face.pat = 1;
     counter = 0;
     timer_func = talk;
     mes.exist = true;
+
     var t = Math.floor((timer.ed - timer.st) / 1000);
     mes.txt2 = t + " 秒";
 
@@ -665,17 +672,22 @@ function clear_anime(){
     var come = ["不錯喔！", "很好耶！", "超棒der！", "太強啦！", "無敵了！"];
     mes.txt1 = come[lev];
 
-    // 儲存成績到排行榜
+    // 新增成績到 Firestore（包含 grid 欄位）
     var currentGrid = String(activeButton);
-    if (!leaderboards[currentGrid]) {
-        leaderboards[currentGrid] = [];
-    }
-    leaderboards[currentGrid].push({ name: playerName, time: t });
-    leaderboards[currentGrid].sort(function(a, b) {
-        return a.time - b.time;
-    });
-    leaderboards[currentGrid] = leaderboards[currentGrid].slice(0, 5);
-    save_leaderboard();
+    var newRecord = {
+        name: playerName,
+        time: t,
+        grid: currentGrid
+    };
+
+    db.collection("leaderboards").add(newRecord)
+        .then(() => {
+            console.log("新成績已儲存");
+            load_leaderboard(); // 寫入後馬上重新載入排行榜資料
+        })
+        .catch((error) => {
+            console.error("成績寫入失敗：", error);
+        });
 }
 
 // 表情臉說話動畫
